@@ -58,3 +58,9 @@ SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in you
              ...' at line 4
 Check /Applications/XAMPP/xamppfiles/htdocs/PGConnect/backend/getPgs.log
 
+2026-02-08 10:56:26 ALERT: PGConnect: repeated getPgs errors
+Error repeated 3 times within window: 
+SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '$statusWhere AND latitude IS NOT NULL AND longitude IS NOT NULL
+             ...' at line 4
+Check /Applications/XAMPP/xamppfiles/htdocs/PGConnect/backend/getPgs.log
+

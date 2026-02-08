@@ -11,6 +11,12 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['user_role'] ?? '') !== 'owner') 
 
 $ownerId = (int)($_SESSION['user_id'] ?? 0);
 require_once '../includes/header.php';
+require_once '../backend/user_schema.php';
+ensure_user_profile_schema($pdo);
+// owner verification status
+$vstmt = $pdo->prepare('SELECT owner_verification_status FROM users WHERE id = ?');
+$vstmt->execute([$ownerId]);
+$verificationStatus = $vstmt->fetchColumn() ?: 'pending';
 ?>
 
 <div class="container py-5">
@@ -18,6 +24,9 @@ require_once '../includes/header.php';
         <div class="col-md-12">
             <h1 class="mb-4">Owner Dashboard</h1>
             <p>Welcome <?php echo htmlspecialchars($_SESSION['user_name'] ?? ''); ?>!</p>
+            <?php if ($verificationStatus !== 'verified'): ?>
+              <div class="alert alert-warning">Your owner verification is <strong><?php echo htmlspecialchars($verificationStatus); ?></strong>. Upload documents in <a href="owner-profile.php">My Profile</a>.</div>
+            <?php endif; ?>
 
             <!-- Owner PGs -->
             <?php

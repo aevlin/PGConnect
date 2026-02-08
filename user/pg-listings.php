@@ -82,6 +82,7 @@ require_once '../backend/reviews_schema.php';
                         </p>
                         <a href="pg-detail.php?id=<?php echo $row['id']; ?>"
                            class="btn btn-success mt-auto">View Details</a>
+                        <button class="btn btn-outline-secondary compare-btn mt-2" data-pg="<?php echo $row['id']; ?>">Compare</button>
                     </div>
                 </div>
             </div>

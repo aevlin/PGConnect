@@ -40,6 +40,19 @@ if ($action === 'confirm') {
 $upd = $pdo->prepare('UPDATE bookings SET status = ?, user_action_at = NOW() WHERE id = ?');
 $upd->execute([$newStatus, $id]);
 
+// update availability when confirmed
+if ($newStatus === 'user_confirmed') {
+    try {
+        $stmt = $pdo->prepare('UPDATE pg_listings SET available_beds = GREATEST(available_beds - 1, 0) WHERE id = ?');
+        $stmt->execute([(int)$b['pg_id']]);
+        $st = $pdo->prepare('SELECT available_beds FROM pg_listings WHERE id = ?');
+        $st->execute([(int)$b['pg_id']]);
+        $avail = (int)$st->fetchColumn();
+        $occ = $avail <= 0 ? 'full' : ($avail <= 2 ? 'filling_fast' : 'available');
+        $pdo->prepare('UPDATE pg_listings SET occupancy_status = ? WHERE id = ?')->execute([$occ, (int)$b['pg_id']]);
+    } catch (Throwable $e) {}
+}
+
 // log to admin alerts
 @file_put_contents(__DIR__ . '/../backend/booking_notifications.log', date('Y-m-d H:i:s') . " USER_ACTION: booking_id={$id} status={$newStatus}\n", FILE_APPEND);
 

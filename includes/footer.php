@@ -228,13 +228,13 @@ document.addEventListener('click', function (e) {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: 'pg_id=' + encodeURIComponent(pgId)
-  }).then(r => r.json()).then(j => {
-    if (j && j.ok) {
-      b.classList.toggle('active', j.action === 'added');
-      b.innerText = j.action === 'added' ? 'Compared' : 'Compare';
-      const badge = document.getElementById('compareCountBadge');
-      if (badge) badge.innerText = j.count || 0;
-    }
-  }).catch(()=>{}).finally(()=>{ b.disabled = false; });
+    }).then(r => r.json()).then(j => {
+      if (j && j.ok) {
+        b.classList.toggle('active', j.action === 'added');
+        b.innerText = j.action === 'added' ? 'Compared' : 'Compare';
+        const badge = document.getElementById('compareCountBadge');
+        if (badge) badge.innerText = j.count || 0;
+      }
+    }).catch(()=>{}).finally(()=>{ b.disabled = false; });
 });
 </script>

@@ -41,6 +41,7 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
               <p class="card-text mb-1 text-muted"><?php echo htmlspecialchars($row['city']); ?></p>
               <div class="mb-1"><span class="rating-badge">★ <?php echo htmlspecialchars(pg_fallback_rating((int)$row['id'])); ?></span></div>
               <p class="card-text mb-1">₹<?php echo (int)$row['monthly_rent']; ?> / month · <?php echo htmlspecialchars(ucfirst($row['sharing_type'])); ?> sharing</p>
+              <button class="btn btn-outline-secondary btn-sm compare-btn mt-2" data-pg="<?php echo $row['id']; ?>">Compare</button>
             </div>
           </div>
         </div>

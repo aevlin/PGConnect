@@ -46,3 +46,7 @@
              ...' at line 4
 2026-02-08 10:45:38 ERROR: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '$statusWhere AND latitude IS NOT NULL AND longitude IS NOT NULL
              ...' at line 4
+2026-02-08 10:56:25 ERROR: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '$statusWhere AND latitude IS NOT NULL AND longitude IS NOT NULL
+             ...' at line 4
+2026-02-08 10:58:27 ERROR: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '$statusWhere AND latitude IS NOT NULL AND longitude IS NOT NULL
+             ...' at line 4

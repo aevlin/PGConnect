@@ -3,3 +3,4 @@
 2026-02-08 09:02:23 owner-add-pg error: SQLSTATE[01000]: Warning: 1265 Data truncated for column 'sharing_type' at row 1
 #0 /Applications/XAMPP/xamppfiles/htdocs/PGConnect/owner/owner-add-pg.php(94): PDOStatement->execute(Array)
 #1 {main}
+2026-02-08 10:56:20 ERROR: [2] Undefined variable $avgRating in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/user/pg-detail.php:65

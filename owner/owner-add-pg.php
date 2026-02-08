@@ -12,6 +12,14 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['user_role'] ?? '') !== 'owner') 
 
 $success = $error = '';
 $user_id = $_SESSION['user_id'];
+$ownerVerified = true;
+try {
+  require_once '../backend/user_schema.php';
+  ensure_user_profile_schema($pdo);
+  $vs = $pdo->prepare('SELECT owner_verification_status FROM users WHERE id = ?');
+  $vs->execute([$user_id]);
+  $ownerVerified = ($vs->fetchColumn() === 'verified');
+} catch (Throwable $e) { $ownerVerified = true; }
 
 // determine if we're editing an existing PG
 $edit_id = 0;
@@ -105,6 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       }
     } else {
       $newStatus = (defined('AUTO_APPROVE_LISTINGS') && AUTO_APPROVE_LISTINGS) ? 'approved' : 'pending';
+      if (!$ownerVerified) $newStatus = 'pending';
       $stmt = $pdo->prepare("INSERT INTO pg_listings (owner_id, pg_code, pg_name, district, state, location_area, city, address, occupancy_type, capacity, available_beds, occupancy_status, monthly_rent, amenities, sharing_type, latitude, longitude, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
       if ($stmt->execute([$user_id, $pg_code, $pg_name, $district, $state, $location_area, $city, $address, $occupancy_type, $capacity, $available_beds, $occupancy_status, $monthly_rent, $amenities, $sharing_type, $latitude, $longitude, $newStatus])) {
         $pg_id = $pdo->lastInsertId();

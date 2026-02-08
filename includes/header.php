@@ -122,7 +122,8 @@ function pg_fallback_rating($pgId) {
             <li class="nav-item">
               <a class="nav-link position-relative" href="<?php echo BASE_URL; ?>/user/compare.php">
                 <i class="fa fa-clone"></i>
-                <span class="badge bg-dark rounded-pill ms-1" id="compareCountBadge">0</span>
+                <?php $cmpCount = isset($_SESSION['compare_pgs']) ? count($_SESSION['compare_pgs']) : 0; ?>
+                <span class="badge bg-dark rounded-pill ms-1" id="compareCountBadge" data-count="<?php echo (int)$cmpCount; ?>">0</span>
               </a>
             </li>
           <?php endif; ?>

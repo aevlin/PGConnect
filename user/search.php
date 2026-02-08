@@ -369,6 +369,7 @@ if (isset($_SESSION['user_id'])) {
                                 <?php if (!empty($bookingByPg[$row['id']])): ?>
                                     <span class="badge bg-warning text-dark align-self-center"><?php echo htmlspecialchars($bookingByPg[$row['id']]); ?></span>
                                 <?php endif; ?>
+                                <button class="btn btn-outline-secondary compare-btn" data-pg="<?php echo $row['id']; ?>">Compare</button>
                             </div>
                         </div>
                     </div>
