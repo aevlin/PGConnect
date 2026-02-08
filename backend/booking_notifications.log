@@ -1,0 +1,12 @@
+2026-02-08 09:36:24 USER_REQUEST: New booking request: booking_id=2, pg_id=7, user_id=4
+Name: Aleena
+Phone: 2167865679
+Message: 
+
+2026-02-08 09:36:37 OWNER_ACTION: Your booking request (id=2) has been owner_approved. Please confirm to complete the booking.
+2026-02-08 09:48:01 USER_ACTION: booking_id=2 status=user_confirmed
+2026-02-08 09:49:51 USER_REQUEST: New booking request: booking_id=3, pg_id=1078, user_id=4
+Name: Aleena
+Phone: 123456789
+Message: 
+

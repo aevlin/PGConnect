@@ -1,0 +1,11 @@
+# Redirect legacy index.html requests to index.php (canonical homepage)
+RewriteEngine On
+# Ensure index.php is the DirectoryIndex
+DirectoryIndex index.php
+
+# Redirect any direct request to index.html -> index.php
+RewriteCond %{THE_REQUEST} /index\.html [NC]
+RewriteRule ^index\.html$ /index.php [R=301,L]
+
+# For safety, also redirect plain requests for /index.html by filename
+RedirectMatch 301 (?i)/index\.html$ /index.php

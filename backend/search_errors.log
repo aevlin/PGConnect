@@ -1,0 +1,182 @@
+2026-02-08 08:57:17 SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 08:57:17 FALLBACK_ERROR: SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:00:25 SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:00:25 FALLBACK_ERROR: SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:00:28 SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:00:28 FALLBACK_ERROR: SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:03:03 SQL_ERROR: SQLSTATE[HY093]: Invalid parameter number
+SQL: SELECT COUNT(*) as total FROM pg_listings p WHERE (p.status IN ('approved','pending')) AND (
+        LOWER(p.city) LIKE :city OR LOWER(p.address) LIKE :city OR LOWER(p.pg_name) LIKE :city OR
+        LOWER(p.pg_code) LIKE :city OR LOWER(p.location_area) LIKE :city OR LOWER(p.district) LIKE :city OR LOWER(p.state) LIKE :city
+    )
+PARAMS: {"city":"%kochi%"}
+2026-02-08 09:03:03 SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:03:03 SQL_ERROR: SQLSTATE[HY093]: Invalid parameter number
+SQL: SELECT p.id, p.pg_name, p.city, p.monthly_rent, p.capacity, p.sharing_type,
+                               (SELECT image_path FROM pg_images WHERE pg_id = p.id LIMIT 1) AS cover_image
+                        FROM pg_listings p WHERE (p.status IN ('approved','pending')) AND (
+                    LOWER(p.city) LIKE :t0 OR LOWER(p.address) LIKE :t0 OR LOWER(p.pg_name) LIKE :t0 OR LOWER(p.pg_code) LIKE :t0 OR LOWER(p.location_area) LIKE :t0 OR LOWER(p.district) LIKE :t0 OR LOWER(p.state) LIKE :t0
+                )
+                        ORDER BY p.created_at DESC LIMIT 0, 6
+PARAMS: {"t0":"%kochi%"}
+2026-02-08 09:03:03 FALLBACK_ERROR: SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:03:05 SQL_ERROR: SQLSTATE[HY093]: Invalid parameter number
+SQL: SELECT COUNT(*) as total FROM pg_listings p WHERE (p.status IN ('approved','pending')) AND (
+        LOWER(p.city) LIKE :city OR LOWER(p.address) LIKE :city OR LOWER(p.pg_name) LIKE :city OR
+        LOWER(p.pg_code) LIKE :city OR LOWER(p.location_area) LIKE :city OR LOWER(p.district) LIKE :city OR LOWER(p.state) LIKE :city
+    )
+PARAMS: {"city":"%kochi%"}
+2026-02-08 09:03:05 SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:03:05 SQL_ERROR: SQLSTATE[HY093]: Invalid parameter number
+SQL: SELECT p.id, p.pg_name, p.city, p.monthly_rent, p.capacity, p.sharing_type,
+                               (SELECT image_path FROM pg_images WHERE pg_id = p.id LIMIT 1) AS cover_image
+                        FROM pg_listings p WHERE (p.status IN ('approved','pending')) AND (
+                    LOWER(p.city) LIKE :t0 OR LOWER(p.address) LIKE :t0 OR LOWER(p.pg_name) LIKE :t0 OR LOWER(p.pg_code) LIKE :t0 OR LOWER(p.location_area) LIKE :t0 OR LOWER(p.district) LIKE :t0 OR LOWER(p.state) LIKE :t0
+                )
+                        ORDER BY p.created_at DESC LIMIT 0, 6
+PARAMS: {"t0":"%kochi%"}
+2026-02-08 09:03:05 FALLBACK_ERROR: SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:03:06 SQL_ERROR: SQLSTATE[HY093]: Invalid parameter number
+SQL: SELECT COUNT(*) as total FROM pg_listings p WHERE (p.status IN ('approved','pending')) AND (
+        LOWER(p.city) LIKE :city OR LOWER(p.address) LIKE :city OR LOWER(p.pg_name) LIKE :city OR
+        LOWER(p.pg_code) LIKE :city OR LOWER(p.location_area) LIKE :city OR LOWER(p.district) LIKE :city OR LOWER(p.state) LIKE :city
+    )
+PARAMS: {"city":"%kochi%"}
+2026-02-08 09:03:06 SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:03:06 SQL_ERROR: SQLSTATE[HY093]: Invalid parameter number
+SQL: SELECT p.id, p.pg_name, p.city, p.monthly_rent, p.capacity, p.sharing_type,
+                               (SELECT image_path FROM pg_images WHERE pg_id = p.id LIMIT 1) AS cover_image
+                        FROM pg_listings p WHERE (p.status IN ('approved','pending')) AND (
+                    LOWER(p.city) LIKE :t0 OR LOWER(p.address) LIKE :t0 OR LOWER(p.pg_name) LIKE :t0 OR LOWER(p.pg_code) LIKE :t0 OR LOWER(p.location_area) LIKE :t0 OR LOWER(p.district) LIKE :t0 OR LOWER(p.state) LIKE :t0
+                )
+                        ORDER BY p.created_at DESC LIMIT 0, 6
+PARAMS: {"t0":"%kochi%"}
+2026-02-08 09:03:06 FALLBACK_ERROR: SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:03:07 SQL_ERROR: SQLSTATE[HY093]: Invalid parameter number
+SQL: SELECT COUNT(*) as total FROM pg_listings p WHERE (p.status IN ('approved','pending')) AND (
+        LOWER(p.city) LIKE :city OR LOWER(p.address) LIKE :city OR LOWER(p.pg_name) LIKE :city OR
+        LOWER(p.pg_code) LIKE :city OR LOWER(p.location_area) LIKE :city OR LOWER(p.district) LIKE :city OR LOWER(p.state) LIKE :city
+    )
+PARAMS: {"city":"%kochi%"}
+2026-02-08 09:03:07 SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:03:07 SQL_ERROR: SQLSTATE[HY093]: Invalid parameter number
+SQL: SELECT p.id, p.pg_name, p.city, p.monthly_rent, p.capacity, p.sharing_type,
+                               (SELECT image_path FROM pg_images WHERE pg_id = p.id LIMIT 1) AS cover_image
+                        FROM pg_listings p WHERE (p.status IN ('approved','pending')) AND (
+                    LOWER(p.city) LIKE :t0 OR LOWER(p.address) LIKE :t0 OR LOWER(p.pg_name) LIKE :t0 OR LOWER(p.pg_code) LIKE :t0 OR LOWER(p.location_area) LIKE :t0 OR LOWER(p.district) LIKE :t0 OR LOWER(p.state) LIKE :t0
+                )
+                        ORDER BY p.created_at DESC LIMIT 0, 6
+PARAMS: {"t0":"%kochi%"}
+2026-02-08 09:03:07 FALLBACK_ERROR: SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:03:07 SQL_ERROR: SQLSTATE[HY093]: Invalid parameter number
+SQL: SELECT COUNT(*) as total FROM pg_listings p WHERE (p.status IN ('approved','pending')) AND (
+        LOWER(p.city) LIKE :city OR LOWER(p.address) LIKE :city OR LOWER(p.pg_name) LIKE :city OR
+        LOWER(p.pg_code) LIKE :city OR LOWER(p.location_area) LIKE :city OR LOWER(p.district) LIKE :city OR LOWER(p.state) LIKE :city
+    )
+PARAMS: {"city":"%kochi%"}
+2026-02-08 09:03:07 SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:03:07 SQL_ERROR: SQLSTATE[HY093]: Invalid parameter number
+SQL: SELECT p.id, p.pg_name, p.city, p.monthly_rent, p.capacity, p.sharing_type,
+                               (SELECT image_path FROM pg_images WHERE pg_id = p.id LIMIT 1) AS cover_image
+                        FROM pg_listings p WHERE (p.status IN ('approved','pending')) AND (
+                    LOWER(p.city) LIKE :t0 OR LOWER(p.address) LIKE :t0 OR LOWER(p.pg_name) LIKE :t0 OR LOWER(p.pg_code) LIKE :t0 OR LOWER(p.location_area) LIKE :t0 OR LOWER(p.district) LIKE :t0 OR LOWER(p.state) LIKE :t0
+                )
+                        ORDER BY p.created_at DESC LIMIT 0, 6
+PARAMS: {"t0":"%kochi%"}
+2026-02-08 09:03:07 FALLBACK_ERROR: SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:03:07 SQL_ERROR: SQLSTATE[HY093]: Invalid parameter number
+SQL: SELECT COUNT(*) as total FROM pg_listings p WHERE (p.status IN ('approved','pending')) AND (
+        LOWER(p.city) LIKE :city OR LOWER(p.address) LIKE :city OR LOWER(p.pg_name) LIKE :city OR
+        LOWER(p.pg_code) LIKE :city OR LOWER(p.location_area) LIKE :city OR LOWER(p.district) LIKE :city OR LOWER(p.state) LIKE :city
+    )
+PARAMS: {"city":"%kochi%"}
+2026-02-08 09:03:07 SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:03:07 SQL_ERROR: SQLSTATE[HY093]: Invalid parameter number
+SQL: SELECT p.id, p.pg_name, p.city, p.monthly_rent, p.capacity, p.sharing_type,
+                               (SELECT image_path FROM pg_images WHERE pg_id = p.id LIMIT 1) AS cover_image
+                        FROM pg_listings p WHERE (p.status IN ('approved','pending')) AND (
+                    LOWER(p.city) LIKE :t0 OR LOWER(p.address) LIKE :t0 OR LOWER(p.pg_name) LIKE :t0 OR LOWER(p.pg_code) LIKE :t0 OR LOWER(p.location_area) LIKE :t0 OR LOWER(p.district) LIKE :t0 OR LOWER(p.state) LIKE :t0
+                )
+                        ORDER BY p.created_at DESC LIMIT 0, 6
+PARAMS: {"t0":"%kochi%"}
+2026-02-08 09:03:07 FALLBACK_ERROR: SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:03:08 SQL_ERROR: SQLSTATE[HY093]: Invalid parameter number
+SQL: SELECT COUNT(*) as total FROM pg_listings p WHERE (p.status IN ('approved','pending')) AND (
+        LOWER(p.city) LIKE :city OR LOWER(p.address) LIKE :city OR LOWER(p.pg_name) LIKE :city OR
+        LOWER(p.pg_code) LIKE :city OR LOWER(p.location_area) LIKE :city OR LOWER(p.district) LIKE :city OR LOWER(p.state) LIKE :city
+    )
+PARAMS: {"city":"%kochi%"}
+2026-02-08 09:03:08 SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:03:08 SQL_ERROR: SQLSTATE[HY093]: Invalid parameter number
+SQL: SELECT p.id, p.pg_name, p.city, p.monthly_rent, p.capacity, p.sharing_type,
+                               (SELECT image_path FROM pg_images WHERE pg_id = p.id LIMIT 1) AS cover_image
+                        FROM pg_listings p WHERE (p.status IN ('approved','pending')) AND (
+                    LOWER(p.city) LIKE :t0 OR LOWER(p.address) LIKE :t0 OR LOWER(p.pg_name) LIKE :t0 OR LOWER(p.pg_code) LIKE :t0 OR LOWER(p.location_area) LIKE :t0 OR LOWER(p.district) LIKE :t0 OR LOWER(p.state) LIKE :t0
+                )
+                        ORDER BY p.created_at DESC LIMIT 0, 6
+PARAMS: {"t0":"%kochi%"}
+2026-02-08 09:03:08 FALLBACK_ERROR: SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:03:08 SQL_ERROR: SQLSTATE[HY093]: Invalid parameter number
+SQL: SELECT COUNT(*) as total FROM pg_listings p WHERE (p.status IN ('approved','pending')) AND (
+        LOWER(p.city) LIKE :city OR LOWER(p.address) LIKE :city OR LOWER(p.pg_name) LIKE :city OR
+        LOWER(p.pg_code) LIKE :city OR LOWER(p.location_area) LIKE :city OR LOWER(p.district) LIKE :city OR LOWER(p.state) LIKE :city
+    )
+PARAMS: {"city":"%kochi%"}
+2026-02-08 09:03:08 SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:03:08 SQL_ERROR: SQLSTATE[HY093]: Invalid parameter number
+SQL: SELECT p.id, p.pg_name, p.city, p.monthly_rent, p.capacity, p.sharing_type,
+                               (SELECT image_path FROM pg_images WHERE pg_id = p.id LIMIT 1) AS cover_image
+                        FROM pg_listings p WHERE (p.status IN ('approved','pending')) AND (
+                    LOWER(p.city) LIKE :t0 OR LOWER(p.address) LIKE :t0 OR LOWER(p.pg_name) LIKE :t0 OR LOWER(p.pg_code) LIKE :t0 OR LOWER(p.location_area) LIKE :t0 OR LOWER(p.district) LIKE :t0 OR LOWER(p.state) LIKE :t0
+                )
+                        ORDER BY p.created_at DESC LIMIT 0, 6
+PARAMS: {"t0":"%kochi%"}
+2026-02-08 09:03:08 FALLBACK_ERROR: SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:03:08 SQL_ERROR: SQLSTATE[HY093]: Invalid parameter number
+SQL: SELECT COUNT(*) as total FROM pg_listings p WHERE (p.status IN ('approved','pending')) AND (
+        LOWER(p.city) LIKE :city OR LOWER(p.address) LIKE :city OR LOWER(p.pg_name) LIKE :city OR
+        LOWER(p.pg_code) LIKE :city OR LOWER(p.location_area) LIKE :city OR LOWER(p.district) LIKE :city OR LOWER(p.state) LIKE :city
+    )
+PARAMS: {"city":"%kochi%"}
+2026-02-08 09:03:08 SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:03:08 SQL_ERROR: SQLSTATE[HY093]: Invalid parameter number
+SQL: SELECT p.id, p.pg_name, p.city, p.monthly_rent, p.capacity, p.sharing_type,
+                               (SELECT image_path FROM pg_images WHERE pg_id = p.id LIMIT 1) AS cover_image
+                        FROM pg_listings p WHERE (p.status IN ('approved','pending')) AND (
+                    LOWER(p.city) LIKE :t0 OR LOWER(p.address) LIKE :t0 OR LOWER(p.pg_name) LIKE :t0 OR LOWER(p.pg_code) LIKE :t0 OR LOWER(p.location_area) LIKE :t0 OR LOWER(p.district) LIKE :t0 OR LOWER(p.state) LIKE :t0
+                )
+                        ORDER BY p.created_at DESC LIMIT 0, 6
+PARAMS: {"t0":"%kochi%"}
+2026-02-08 09:03:08 FALLBACK_ERROR: SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:03:08 SQL_ERROR: SQLSTATE[HY093]: Invalid parameter number
+SQL: SELECT COUNT(*) as total FROM pg_listings p WHERE (p.status IN ('approved','pending')) AND (
+        LOWER(p.city) LIKE :city OR LOWER(p.address) LIKE :city OR LOWER(p.pg_name) LIKE :city OR
+        LOWER(p.pg_code) LIKE :city OR LOWER(p.location_area) LIKE :city OR LOWER(p.district) LIKE :city OR LOWER(p.state) LIKE :city
+    )
+PARAMS: {"city":"%kochi%"}
+2026-02-08 09:03:08 SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:03:08 SQL_ERROR: SQLSTATE[HY093]: Invalid parameter number
+SQL: SELECT p.id, p.pg_name, p.city, p.monthly_rent, p.capacity, p.sharing_type,
+                               (SELECT image_path FROM pg_images WHERE pg_id = p.id LIMIT 1) AS cover_image
+                        FROM pg_listings p WHERE (p.status IN ('approved','pending')) AND (
+                    LOWER(p.city) LIKE :t0 OR LOWER(p.address) LIKE :t0 OR LOWER(p.pg_name) LIKE :t0 OR LOWER(p.pg_code) LIKE :t0 OR LOWER(p.location_area) LIKE :t0 OR LOWER(p.district) LIKE :t0 OR LOWER(p.state) LIKE :t0
+                )
+                        ORDER BY p.created_at DESC LIMIT 0, 6
+PARAMS: {"t0":"%kochi%"}
+2026-02-08 09:03:08 FALLBACK_ERROR: SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:03:08 SQL_ERROR: SQLSTATE[HY093]: Invalid parameter number
+SQL: SELECT COUNT(*) as total FROM pg_listings p WHERE (p.status IN ('approved','pending')) AND (
+        LOWER(p.city) LIKE :city OR LOWER(p.address) LIKE :city OR LOWER(p.pg_name) LIKE :city OR
+        LOWER(p.pg_code) LIKE :city OR LOWER(p.location_area) LIKE :city OR LOWER(p.district) LIKE :city OR LOWER(p.state) LIKE :city
+    )
+PARAMS: {"city":"%kochi%"}
+2026-02-08 09:03:08 SQLSTATE[HY093]: Invalid parameter number
+2026-02-08 09:03:08 SQL_ERROR: SQLSTATE[HY093]: Invalid parameter number
+SQL: SELECT p.id, p.pg_name, p.city, p.monthly_rent, p.capacity, p.sharing_type,
+                               (SELECT image_path FROM pg_images WHERE pg_id = p.id LIMIT 1) AS cover_image
+                        FROM pg_listings p WHERE (p.status IN ('approved','pending')) AND (
+                    LOWER(p.city) LIKE :t0 OR LOWER(p.address) LIKE :t0 OR LOWER(p.pg_name) LIKE :t0 OR LOWER(p.pg_code) LIKE :t0 OR LOWER(p.location_area) LIKE :t0 OR LOWER(p.district) LIKE :t0 OR LOWER(p.state) LIKE :t0
+                )
+                        ORDER BY p.created_at DESC LIMIT 0, 6
+PARAMS: {"t0":"%kochi%"}
+2026-02-08 09:03:08 FALLBACK_ERROR: SQLSTATE[HY093]: Invalid parameter number

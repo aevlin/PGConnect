@@ -1,0 +1,4 @@
+pg_name,city,address,monthly_rent,capacity,sharing_type,latitude,longitude
+Green Nest PG,Bengaluru,HSR Layout Sector 2,8500,20,single,12.911000,77.641000
+Lakeview PG,Hyderabad,Near Jubilee Hills,7000,15,double,17.385044,78.486671
+Seaside PG,Kochi,Kadavanthra,6000,12,triple,9.9667,76.2890

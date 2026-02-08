@@ -1,0 +1,5 @@
+2026-02-08 08:53:21 ERROR: [2] file_put_contents(/Applications/XAMPP/xamppfiles/htdocs/PGConnect/user/../backend/search_debug.log): Failed to open stream: Permission denied in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/user/search.php:8
+2026-02-08 08:54:17 ERROR: [2] file_put_contents(/Applications/XAMPP/xamppfiles/htdocs/PGConnect/user/../backend/search_errors.log): Failed to open stream: Permission denied in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/user/search.php:11
+2026-02-08 09:02:23 owner-add-pg error: SQLSTATE[01000]: Warning: 1265 Data truncated for column 'sharing_type' at row 1
+#0 /Applications/XAMPP/xamppfiles/htdocs/PGConnect/owner/owner-add-pg.php(94): PDOStatement->execute(Array)
+#1 {main}
