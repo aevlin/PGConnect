@@ -2,11 +2,8 @@
 $page_title = 'Booking Requests';
 require_once '../backend/connect.php';
 require_once '../backend/booking_schema.php';
-if (session_status() === PHP_SESSION_NONE) session_start();
-if (!defined('BASE_URL')) define('BASE_URL', '/PGConnect');
-if (!isset($_SESSION['user_id']) || ($_SESSION['user_role'] ?? '') !== 'owner') {
-    header('Location: ' . BASE_URL . '/backend/login.php'); exit;
-}
+require_once '../backend/auth.php';
+require_role('owner');
 
 $ownerId = (int)$_SESSION['user_id'];
 ensure_bookings_schema($pdo);
@@ -50,6 +47,35 @@ try {
     <div class="alert alert-danger"><?php echo htmlspecialchars($queryError); ?></div>
   <?php endif; ?>
 
+  <?php
+    $visitRows = array_values(array_filter($bookings, function($row){
+      return !empty($row['visit_requested']);
+    }));
+  ?>
+  <?php if (!empty($visitRows)): ?>
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body">
+        <h2 class="h6 mb-2">Visit Appointments</h2>
+        <?php foreach ($visitRows as $vr): ?>
+          <div class="border rounded p-2 mb-2">
+            <div class="fw-semibold"><?php echo htmlspecialchars($vr['pg_name']); ?> - <?php echo htmlspecialchars($vr['requester_name']); ?></div>
+            <div class="small text-muted">Preferred: <?php echo htmlspecialchars($vr['visit_datetime'] ?: 'Not set'); ?></div>
+            <div class="d-flex gap-2 mt-2 flex-wrap">
+              <a href="owner-booking-action.php?id=<?php echo (int)$vr['id']; ?>&action=visit_accept" class="btn btn-sm btn-success">Accept visit</a>
+              <a href="owner-booking-action.php?id=<?php echo (int)$vr['id']; ?>&action=visit_cancel" class="btn btn-sm btn-outline-danger">Cancel visit</a>
+              <form action="owner-booking-action.php" method="POST" class="d-flex gap-2">
+                <input type="hidden" name="id" value="<?php echo (int)$vr['id']; ?>">
+                <input type="hidden" name="action" value="visit_reschedule">
+                <input type="datetime-local" name="visit_datetime" class="form-control form-control-sm" required>
+                <button class="btn btn-sm btn-outline-primary">Reschedule</button>
+              </form>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    </div>
+  <?php endif; ?>
+
   <?php if (empty($bookings)): ?>
     <div class="alert alert-info">No booking requests yet.</div>
   <?php else: ?>
@@ -60,15 +86,28 @@ try {
             <div>
               <strong><?php echo htmlspecialchars($b['pg_name']); ?></strong>
               <div class="small text-muted">Requested by <?php echo htmlspecialchars($b['requester_name']); ?> (<?php echo htmlspecialchars($b['requester_email']); ?>) on <?php echo htmlspecialchars($b['created_at']); ?></div>
+              <div class="small text-muted">Move-in date: <?php echo htmlspecialchars($b['move_in_date'] ?: '-'); ?><?php if (!empty($b['contact_phone'])): ?> · Phone: <?php echo htmlspecialchars($b['contact_phone']); ?><?php endif; ?></div>
+              <?php if (!empty($b['visit_requested'])): ?>
+                <div class="small text-primary">Visit appointment requested: <?php echo htmlspecialchars($b['visit_datetime'] ?: 'Time not set'); ?><?php if (!empty($b['visit_note'])): ?> · <?php echo htmlspecialchars($b['visit_note']); ?><?php endif; ?></div>
+                <div class="mt-2 d-flex gap-2 flex-wrap">
+                  <a href="owner-booking-action.php?id=<?php echo (int)$b['id']; ?>&action=visit_accept" class="btn btn-sm btn-outline-success">Accept visit</a>
+                  <a href="owner-booking-action.php?id=<?php echo (int)$b['id']; ?>&action=visit_cancel" class="btn btn-sm btn-outline-danger">Cancel visit</a>
+                </div>
+              <?php endif; ?>
             </div>
             <div class="text-end">
               <div class="small">Status: <strong><?php echo htmlspecialchars($b['status']); ?></strong></div>
               <div class="mt-2">
-                <?php if (in_array($b['status'], ['requested','owner_rejected','user_rejected'], true)): ?>
+                <a href="open-chat.php?booking_id=<?php echo (int)$b['id']; ?>" class="btn btn-sm btn-outline-primary">Chat User</a>
+                <?php if (in_array($b['status'], ['requested'], true)): ?>
                   <a href="owner-booking-action.php?id=<?php echo $b['id']; ?>&action=approve" class="btn btn-sm btn-success">Approve</a>
                   <a href="owner-booking-action.php?id=<?php echo $b['id']; ?>&action=reject" class="btn btn-sm btn-outline-danger">Reject</a>
                 <?php elseif (in_array($b['status'], ['owner_approved','approved'], true)): ?>
-                  <span class="badge bg-success">Awaiting user confirmation</span>
+                  <span class="badge bg-success">Awaiting user agreement/payment</span>
+                <?php elseif ($b['status'] === 'payment_pending'): ?>
+                  <span class="badge bg-warning text-dark">User agreed, awaiting payment</span>
+                <?php elseif ($b['status'] === 'paid'): ?>
+                  <span class="badge bg-primary">Payment completed</span>
                 <?php else: ?>
                   <span class="badge bg-secondary">No action</span>
                 <?php endif; ?>

@@ -7,6 +7,19 @@ require_once __DIR__ . '/config.php';
 
 $logPath = __DIR__ . '/getPgs.log';
 
+function pg_fallback_image_backend($pgId) {
+    $imgs = [
+        'https://images.pexels.com/photos/1457841/pexels-photo-1457841.jpeg',
+        'https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg',
+        'https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg',
+        'https://images.pexels.com/photos/1454806/pexels-photo-1454806.jpeg',
+        'https://images.pexels.com/photos/271618/pexels-photo-271618.jpeg',
+        'https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg'
+    ];
+    $idx = abs((int)$pgId) % count($imgs);
+    return $imgs[$idx];
+}
+
 try {
     // Optional nearby filter: lat, lng in decimal degrees, radius in kilometers
     $lat = isset($_GET['lat']) ? $_GET['lat'] : null;
@@ -33,7 +46,7 @@ try {
 
     if ($lat !== null && $lng !== null) {
         // Haversine formula to compute distance in km (Earth radius ~6371 km)
-        $sql = 'SELECT id, pg_name, city, address AS location, monthly_rent AS rent, capacity, sharing_type,
+        $sql = "SELECT id, pg_name, city, address AS location, monthly_rent AS rent, capacity, sharing_type,
                        latitude, longitude,
                        (SELECT image_path FROM pg_images WHERE pg_id = pg_listings.id ORDER BY id LIMIT 1) AS cover_image,
                        (6371 * acos(
@@ -41,10 +54,14 @@ try {
                            sin(radians(:lat)) * sin(radians(latitude))
                        )) AS distance
                 FROM pg_listings
-                WHERE status $statusWhere AND latitude IS NOT NULL AND longitude IS NOT NULL
+                WHERE status $statusWhere
+                  AND latitude IS NOT NULL AND longitude IS NOT NULL
+                  AND latitude BETWEEN -90 AND 90
+                  AND longitude BETWEEN -180 AND 180
+                  AND NOT (ABS(latitude) < 0.000001 AND ABS(longitude) < 0.000001)
                 HAVING distance <= :radius
                 ORDER BY distance ASC
-                LIMIT 500';
+                LIMIT 500";
 
         $stmt = $pdo->prepare($sql);
         $stmt->execute([':lat' => $lat, ':lng' => $lng, ':radius' => $radius]);
@@ -52,15 +69,38 @@ try {
 
         if (empty($pgs)) {
             @file_put_contents($logPath, date('Y-m-d H:i:s') . " No nearby PGs for {$lat},{$lng} radius={$radius}\n", FILE_APPEND);
+            // fallback: return nearest entries when strict radius gives nothing
+            $fallbackSql = "SELECT id, pg_name, city, address AS location, monthly_rent AS rent, capacity, sharing_type,
+                                   latitude, longitude,
+                                   (SELECT image_path FROM pg_images WHERE pg_id = pg_listings.id ORDER BY id LIMIT 1) AS cover_image,
+                                   (6371 * acos(
+                                       cos(radians(:lat)) * cos(radians(latitude)) * cos(radians(longitude) - radians(:lng)) +
+                                       sin(radians(:lat)) * sin(radians(latitude))
+                                   )) AS distance
+                            FROM pg_listings
+                            WHERE status $statusWhere
+                              AND latitude IS NOT NULL AND longitude IS NOT NULL
+                              AND latitude BETWEEN -90 AND 90
+                              AND longitude BETWEEN -180 AND 180
+                              AND NOT (ABS(latitude) < 0.000001 AND ABS(longitude) < 0.000001)
+                            ORDER BY distance ASC
+                            LIMIT 25";
+            $fstmt = $pdo->prepare($fallbackSql);
+            $fstmt->execute([':lat' => $lat, ':lng' => $lng]);
+            $pgs = $fstmt->fetchAll(PDO::FETCH_ASSOC);
         }
     } else {
         $stmt = $pdo->prepare(
-            'SELECT id, pg_name, city, address AS location, monthly_rent AS rent, capacity, sharing_type, latitude, longitude,
+            "SELECT id, pg_name, city, address AS location, monthly_rent AS rent, capacity, sharing_type, latitude, longitude,
                     (SELECT image_path FROM pg_images WHERE pg_id = pg_listings.id ORDER BY id LIMIT 1) AS cover_image
              FROM pg_listings
-             WHERE status $statusWhere AND latitude IS NOT NULL AND longitude IS NOT NULL
+             WHERE status $statusWhere
+               AND latitude IS NOT NULL AND longitude IS NOT NULL
+               AND latitude BETWEEN -90 AND 90
+               AND longitude BETWEEN -180 AND 180
+               AND NOT (ABS(latitude) < 0.000001 AND ABS(longitude) < 0.000001)
              ORDER BY created_at DESC
-             LIMIT 1000'
+             LIMIT 1000"
         );
         $stmt->execute();
         $pgs = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -71,6 +111,7 @@ try {
         $p['latitude'] = isset($p['latitude']) ? (float)$p['latitude'] : null;
         $p['longitude'] = isset($p['longitude']) ? (float)$p['longitude'] : null;
         if (isset($p['distance'])) $p['distance'] = (float)$p['distance'];
+        if (empty($p['cover_image'])) $p['cover_image'] = pg_fallback_image_backend($p['id'] ?? 0);
     }
 
     echo json_encode($pgs);

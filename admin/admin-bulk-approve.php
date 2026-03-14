@@ -1,11 +1,9 @@
 <?php
 // admin/admin-bulk-approve.php
-session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
-    header('Location: ../backend/login.php');
-    exit;
-}
+require_once '../backend/auth.php';
+require_role('admin');
 require_once '../backend/connect.php';
+require_once '../backend/audit.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ids = $_POST['pg_ids'] ?? [];
@@ -28,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = $pdo->prepare("UPDATE pg_listings SET status = ? WHERE id IN ($in)");
     $params = array_merge([$status], array_map('intval', $ids));
     $stmt->execute($params);
+    audit_log($pdo, 'admin_pg_bulk_' . $action, 'pg_listing', null, 'count=' . count($ids) . '; status=' . $status);
 }
 
 header('Location: admin-all-pgs.php');

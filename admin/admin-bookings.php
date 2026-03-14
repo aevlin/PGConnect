@@ -1,16 +1,14 @@
 <?php
-session_start();
-if (!defined('BASE_URL')) define('BASE_URL', '/PGConnect');
-if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
-    header('Location: ' . BASE_URL . '/backend/login.php');
-    exit;
-}
+require_once '../backend/auth.php';
+require_role('admin');
 
 require_once '../includes/header.php';
 require_once '../backend/connect.php';
 require_once '../backend/booking_schema.php';
+require_once '../backend/system_schema.php';
 
 ensure_bookings_schema($pdo);
+ensure_system_schema($pdo);
 
 $bookings = [];
 $queryError = '';
@@ -51,7 +49,10 @@ try {
             <th>PG</th>
             <th>User</th>
             <th>Owner</th>
+            <th>Move-in</th>
+            <th>Visit</th>
             <th>Status</th>
+            <th>Payment</th>
             <th>Created</th>
           </tr>
         </thead>
@@ -62,7 +63,16 @@ try {
               <td><?php echo htmlspecialchars($b['pg_name']); ?> <span class="text-muted small">· <?php echo htmlspecialchars($b['city']); ?></span></td>
               <td><?php echo htmlspecialchars($b['user_name']); ?></td>
               <td><?php echo htmlspecialchars($b['owner_name']); ?></td>
+              <td><?php echo htmlspecialchars($b['move_in_date'] ?: '-'); ?></td>
+              <td>
+                <?php if (!empty($b['visit_requested'])): ?>
+                  <?php echo htmlspecialchars($b['visit_datetime'] ?: 'Requested'); ?>
+                <?php else: ?>
+                  -
+                <?php endif; ?>
+              </td>
               <td><span class="badge bg-secondary"><?php echo htmlspecialchars($b['status']); ?></span></td>
+              <td><span class="badge bg-info text-dark"><?php echo htmlspecialchars($b['payment_status'] ?? 'unpaid'); ?></span></td>
               <td><?php echo htmlspecialchars($b['created_at']); ?></td>
             </tr>
           <?php endforeach; ?>

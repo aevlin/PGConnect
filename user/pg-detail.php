@@ -5,6 +5,8 @@ require_once '../backend/config.php';
 require_once '../backend/messages_schema.php';
 require_once '../backend/user_schema.php';
 require_once '../backend/reviews_schema.php';
+require_once '../backend/feature_schema.php';
+require_once '../backend/trust.php';
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if (!$id) {
@@ -31,6 +33,20 @@ $statusClass = ($row['status'] ?? '') === 'approved' ? 'bg-success' : 'bg-warnin
 ensure_user_profile_schema($pdo);
 ensure_chat_schema($pdo);
 ensure_reviews_schema($pdo);
+ensure_feature_schema($pdo);
+
+// rating
+$avgRating = null;
+$ratingCount = 0;
+try {
+    $rs = $pdo->prepare('SELECT AVG(rating) as avg_r, COUNT(*) as cnt FROM reviews WHERE pg_id = ?');
+    $rs->execute([$id]);
+    $r = $rs->fetch(PDO::FETCH_ASSOC);
+    $avgRating = $r && $r['avg_r'] ? round((float)$r['avg_r'], 1) : null;
+    $ratingCount = $r ? (int)$r['cnt'] : 0;
+} catch (Throwable $e) {}
+if ($avgRating === null) $avgRating = pg_fallback_rating($id);
+$trustScore = pg_trust_score($pdo, $id);
 
 // owner contact
 $ownerInfo = null;
@@ -39,17 +55,65 @@ try {
     $os->execute([$id]);
     $ownerInfo = $os->fetch(PDO::FETCH_ASSOC);
 } catch (Throwable $e) { $ownerInfo = null; }
+
+$isLoggedIn = isset($_SESSION['user_id']);
+$isTenant = $isLoggedIn && (($_SESSION['user_role'] ?? '') === 'user');
+$coordsAvailable = is_numeric($row['latitude'] ?? null) && is_numeric($row['longitude'] ?? null);
+
+$userBookingStatus = '';
+$userBookingMessage = '';
+$bookingBlocked = false;
+if ($isTenant) {
+    try {
+        require_once '../backend/booking_schema.php';
+        ensure_bookings_schema($pdo);
+        $bst = $pdo->prepare('SELECT status, moved_out_at FROM bookings WHERE user_id = ? AND pg_id = ? ORDER BY created_at DESC LIMIT 1');
+        $bst->execute([$_SESSION['user_id'], $id]);
+        $lastBooking = $bst->fetch(PDO::FETCH_ASSOC);
+        if ($lastBooking) {
+            $userBookingStatus = (string)($lastBooking['status'] ?? '');
+            $movedOutAt = $lastBooking['moved_out_at'] ?? null;
+            if ($userBookingStatus === 'paid' && empty($movedOutAt)) {
+                $bookingBlocked = true;
+                $userBookingMessage = 'You are already staying in this PG.';
+            } elseif (in_array($userBookingStatus, ['requested', 'owner_approved', 'approved', 'user_confirmed', 'payment_pending'], true)) {
+                $bookingBlocked = true;
+                $userBookingMessage = 'You already booked this PG. Please manage your existing request.';
+            }
+        }
+    } catch (Throwable $e) {
+        $userBookingStatus = '';
+        $userBookingMessage = '';
+        $bookingBlocked = false;
+    }
+}
 ?>
 
 <section class="section-shell">
   <div class="container py-5">
+    <?php if (isset($_GET['review_prompt']) && $_GET['review_prompt'] == '1'): ?>
+      <div class="alert alert-success mb-4">
+        Stay marked as completed. Please add your review below.
+      </div>
+    <?php endif; ?>
+    <?php if (!isset($_SESSION['user_id'])): ?>
+      <div class="alert alert-warning mb-4">
+        Please <a href="<?php echo BASE_URL; ?>/backend/login.php">login</a> or
+        <a href="<?php echo BASE_URL; ?>/backend/signup.php">sign up</a> to contact owners or make booking requests.
+      </div>
+    <?php elseif (!$isTenant): ?>
+      <div class="alert alert-info mb-4">
+        Booking is available only for tenant user accounts.
+      </div>
+    <?php endif; ?>
     <a href="pg-listings.php" class="btn btn-outline-secondary mb-4">← Back to listings</a>
 
     <div class="row g-4">
         <!-- Main content -->
         <div class="col-lg-8">
             <div class="card shadow-sm border-0">
-                <img src="<?php echo htmlspecialchars($row['cover_image'] ? pg_image_url($row['cover_image'], 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=1200') : 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=1200'); ?>"
+                <?php $fallbackImg = pg_fallback_image((int)$row['id']); ?>
+                <img src="<?php echo htmlspecialchars($row['cover_image'] ? pg_image_url($row['cover_image'], $fallbackImg) : $fallbackImg); ?>"
                      class="card-img-top"
                      style="height: 400px; object-fit: cover;"
                      alt="PG photo">
@@ -63,6 +127,7 @@ try {
                         </div>
                         <div class="col-md-6">
                             <div class="mb-2"><span class="rating-badge">★ <?php echo htmlspecialchars($avgRating); ?></span> <span class="small text-muted">(<?php echo (int)$ratingCount; ?> ratings)</span></div>
+                            <div class="mb-2"><span class="badge bg-info text-dark">Trust score: <?php echo (int)$trustScore; ?>/100</span></div>
                             <h2 class="h4 mb-1">₹<?php echo number_format($row['monthly_rent'], 0); ?>/month</h2>
                             <p class="mb-0">
                                 <span class="badge bg-success"><?php echo htmlspecialchars($row['capacity']); ?> beds total</span>
@@ -97,25 +162,56 @@ try {
                         </div>
                     </div>
 
+                    <div class="card border-0 bg-light mb-3">
+                        <div class="card-body">
+                            <h6 class="mb-2">Map Location</h6>
+                            <?php if ($coordsAvailable): ?>
+                                <div id="pgDetailMap" style="height:260px;border-radius:12px;overflow:hidden;"></div>
+                                <div class="small text-muted mt-2">
+                                    Lat: <?php echo htmlspecialchars((string)$row['latitude']); ?>,
+                                    Lng: <?php echo htmlspecialchars((string)$row['longitude']); ?>
+                                </div>
+                            <?php else: ?>
+                                <div class="alert alert-info mb-0">Location coordinates are not available for this PG.</div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
                     <div class="d-flex gap-3">
-                        <button id="bookNowBtn" class="btn btn-success flex-grow-1">Book Now</button>
-                        <button id="contactOwnerBtn" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#contactOwnerModal">Contact Owner</button>
+                        <button id="bookNowBtn" class="btn btn-success flex-grow-1"
+                                <?php echo $isTenant && !$bookingBlocked ? '' : 'disabled'; ?>>
+                            <?php echo $bookingBlocked ? 'Already Booked' : 'Book Now'; ?>
+                        </button>
+                        <button id="contactOwnerBtn" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#contactOwnerModal" <?php echo $isLoggedIn ? '' : 'disabled'; ?>>Contact Owner</button>
+                        <button id="chatOwnerBtn" class="btn btn-primary" <?php echo $isLoggedIn ? '' : 'disabled'; ?>>Chat Owner</button>
                     </div>
                     <?php
-                    // show booking status for logged-in user
-                    $userBookingStatus = '';
-                    if (isset($_SESSION['user_id'])) {
-                        try {
-                            require_once '../backend/booking_schema.php';
-                            ensure_bookings_schema($pdo);
-                            $bst = $pdo->prepare('SELECT status FROM bookings WHERE user_id = ? AND pg_id = ? ORDER BY created_at DESC LIMIT 1');
-                            $bst->execute([$_SESSION['user_id'], $id]);
-                            $userBookingStatus = $bst->fetchColumn() ?: '';
-                        } catch (Throwable $e) { $userBookingStatus = ''; }
-                    }
+                      $blockedDates = [];
+                      try {
+                        $bd = $pdo->prepare('SELECT block_date FROM availability_blocks WHERE pg_id = ? ORDER BY block_date ASC LIMIT 90');
+                        $bd->execute([$id]);
+                        $blockedDates = $bd->fetchAll(PDO::FETCH_COLUMN);
+                      } catch (Throwable $e) {}
                     ?>
-                    <?php if (!empty($userBookingStatus)): ?>
-                        <div class="alert alert-info mt-3 mb-0">Your booking status: <strong><?php echo htmlspecialchars($userBookingStatus); ?></strong>. <a href="booking-request.php">Manage</a></div>
+                    <?php if (!empty($blockedDates)): ?>
+                      <div class="alert alert-warning mt-3 mb-0">
+                        <strong>Unavailable dates:</strong>
+                        <span class="small"><?php echo htmlspecialchars(implode(', ', array_slice($blockedDates, 0, 12))); ?><?php echo count($blockedDates) > 12 ? ' ...' : ''; ?></span>
+                      </div>
+                    <?php endif; ?>
+                    <?php
+                    // user booking status and duplicate-booking message
+                    ?>
+                    <?php if (!empty($userBookingStatus) || !empty($userBookingMessage)): ?>
+                        <div class="alert alert-info mt-3 mb-0">
+                            <?php if (!empty($userBookingMessage)): ?>
+                                <?php echo htmlspecialchars($userBookingMessage); ?><br>
+                            <?php endif; ?>
+                            <?php if (!empty($userBookingStatus)): ?>
+                                Your booking status: <strong><?php echo htmlspecialchars($userBookingStatus); ?></strong>.
+                            <?php endif; ?>
+                            <a href="booking-request.php">Manage</a>
+                        </div>
                     <?php endif; ?>
 
                     <div class="mt-4">
@@ -145,7 +241,7 @@ try {
                         <?php
                           $revRows = [];
                           try {
-                              $rv = $pdo->prepare('SELECT r.rating, r.comment, r.created_at, u.name FROM reviews r JOIN users u ON u.id = r.user_id WHERE r.pg_id = ? ORDER BY r.created_at DESC LIMIT 5');
+                              $rv = $pdo->prepare('SELECT r.rating, r.comment, r.owner_response, r.created_at, u.name FROM reviews r JOIN users u ON u.id = r.user_id WHERE r.pg_id = ? AND COALESCE(r.is_hidden,0) = 0 ORDER BY r.created_at DESC LIMIT 5');
                               $rv->execute([$id]);
                               $revRows = $rv->fetchAll(PDO::FETCH_ASSOC);
                           } catch (Throwable $e) {}
@@ -157,6 +253,9 @@ try {
                             <div class="border-bottom py-2">
                               <div class="small"><strong><?php echo htmlspecialchars($rv['name']); ?></strong> · ★ <?php echo (int)$rv['rating']; ?></div>
                               <div class="small text-muted"><?php echo htmlspecialchars($rv['comment'] ?? ''); ?></div>
+                              <?php if (!empty($rv['owner_response'])): ?>
+                                <div class="small mt-1"><span class="badge bg-light text-dark border">Owner reply</span> <?php echo htmlspecialchars($rv['owner_response']); ?></div>
+                              <?php endif; ?>
                             </div>
                           <?php endforeach; ?>
                         <?php endif; ?>
@@ -186,7 +285,7 @@ try {
                         $gimgs = $gstmt->fetchAll(PDO::FETCH_COLUMN);
                         if (empty($gimgs)) {
                             // fallback to cover_image or placeholder
-                            $fallback = $row['cover_image'] ?: 'https://images.unsplash.com/photo-1519710880219-8ac3f88f773c?w=300';
+                            $fallback = $row['cover_image'] ?: pg_fallback_image((int)$row['id']);
                             $gimgs = [$fallback];
                         }
                         foreach ($gimgs as $gimg) {
@@ -218,6 +317,23 @@ try {
 </section>
 
 <?php require_once '../includes/footer.php'; ?>
+
+<?php if ($coordsAvailable): ?>
+<script>
+(function(){
+  const mapEl = document.getElementById('pgDetailMap');
+  if (!mapEl || typeof L === 'undefined') return;
+  const lat = <?php echo json_encode((float)$row['latitude']); ?>;
+  const lng = <?php echo json_encode((float)$row['longitude']); ?>;
+  const map = L.map(mapEl).setView([lat, lng], 15);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+  L.marker([lat, lng]).addTo(map).bindPopup('<?php echo addslashes(htmlspecialchars($row['pg_name'])); ?>').openPopup();
+})();
+</script>
+<?php endif; ?>
 
 <!-- Contact Owner Modal -->
 <div class="modal fade" id="contactOwnerModal" tabindex="-1" aria-hidden="true">
@@ -271,6 +387,26 @@ try {
                         <input type="text" name="contact_phone" class="form-control" value="" required>
                     </div>
                     <div class="mb-3">
+                        <label class="form-label">Join date</label>
+                        <input type="date" name="move_in_date" id="moveInDateInput" class="form-control" required>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" value="1" id="visitRequested" name="visit_requested">
+                        <label class="form-check-label" for="visitRequested">
+                            Request a property visit appointment first
+                        </label>
+                    </div>
+                    <div id="visitFields" style="display:none;">
+                        <div class="mb-3">
+                            <label class="form-label">Preferred visit date & time</label>
+                            <input type="datetime-local" name="visit_datetime" id="visitDatetime" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Visit note (optional)</label>
+                            <input type="text" name="visit_note" class="form-control" placeholder="Preferred time window or instructions">
+                        </div>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label">Message (optional)</label>
                         <textarea name="message" class="form-control" rows="3" placeholder="Any specific requirements or move-in date"></textarea>
                     </div>
@@ -294,8 +430,30 @@ try {
         const submitBtn = document.getElementById('submitBooking');
         const bookingForm = document.getElementById('bookingForm');
         const bookingAlert = document.getElementById('bookingAlert');
+        const moveInDateInput = document.getElementById('moveInDateInput');
+        const blockedDates = <?php echo json_encode(array_values($blockedDates ?? [])); ?>;
+        const visitRequested = document.getElementById('visitRequested');
+        const visitFields = document.getElementById('visitFields');
+        const visitDatetime = document.getElementById('visitDatetime');
 
         if (!bookBtn) return;
+
+        if (visitRequested && visitFields && visitDatetime) {
+            visitRequested.addEventListener('change', function(){
+                const show = !!visitRequested.checked;
+                visitFields.style.display = show ? 'block' : 'none';
+                visitDatetime.required = show;
+            });
+        }
+
+        if (moveInDateInput && Array.isArray(blockedDates) && blockedDates.length) {
+            moveInDateInput.addEventListener('change', function(){
+                if (blockedDates.includes(moveInDateInput.value)) {
+                    if (bookingAlert) bookingAlert.innerHTML = '<div class="alert alert-warning">Selected join date is unavailable. Please choose another date.</div>';
+                    moveInDateInput.value = '';
+                }
+            });
+        }
 
         bookBtn.addEventListener('click', function(){
             // if not logged in, redirect to login
@@ -314,16 +472,22 @@ try {
                 if (bookingAlert) bookingAlert.innerHTML = '<div class="text-muted">Sending request...</div>';
                 const data = new FormData(bookingForm);
                 fetch('<?php echo BASE_URL; ?>/backend/create_booking.php', { method: 'POST', body: data })
-                    .then(r => r.json())
+                    .then(async r => {
+                        const text = await r.text();
+                        let json = null;
+                        try { json = JSON.parse(text); } catch (e) {}
+                        return { okHttp: r.ok, json, text };
+                    })
                     .then(j => {
-                        if (j && j.ok) {
+                        if (j.json && j.json.ok) {
                             if (bookingAlert) bookingAlert.innerHTML = '<div class="alert alert-success">Booking request sent. Owner will be notified.</div>';
                             setTimeout(() => { if (bookingModal) bookingModal.hide(); }, 1200);
                         } else {
-                            if (bookingAlert) bookingAlert.innerHTML = '<div class="alert alert-danger">Failed to send request. ' + (j && j.message ? j.message : '') + '</div>';
+                            const msg = (j.json && j.json.message) ? j.json.message : (!j.okHttp ? ('HTTP ' + j.text) : 'Please check all required fields.');
+                            if (bookingAlert) bookingAlert.innerHTML = '<div class="alert alert-danger">Failed to send request. ' + msg + '</div>';
                         }
                     }).catch(err => {
-                        if (bookingAlert) bookingAlert.innerHTML = '<div class="alert alert-danger">Error sending request.</div>';
+                        if (bookingAlert) bookingAlert.innerHTML = '<div class="alert alert-danger">Error sending request: ' + (err && err.message ? err.message : '') + '</div>';
                     }).finally(()=>{ submitBtn.disabled = false; });
             });
         }
@@ -364,6 +528,37 @@ try {
 
 <script>
 (function(){
+  const chatBtn = document.getElementById('chatOwnerBtn');
+  if (!chatBtn) return;
+  chatBtn.addEventListener('click', function(){
+    <?php if (!isset($_SESSION['user_id'])): ?>
+      window.location.href = '<?php echo BASE_URL; ?>/backend/login.php';
+      return;
+    <?php endif; ?>
+
+    chatBtn.disabled = true;
+    const body = 'pg_id=' + encodeURIComponent('<?php echo (int)$id; ?>');
+    fetch('<?php echo BASE_URL; ?>/backend/open_chat.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body
+    }).then(r => r.json()).then(j => {
+      if (j && j.ok && j.redirect) {
+        window.location.href = j.redirect;
+      } else if (j && j.error === 'auth_required') {
+        window.location.href = '<?php echo BASE_URL; ?>/backend/login.php';
+      } else {
+        alert('Unable to open chat right now.');
+      }
+    }).catch(() => {
+      alert('Unable to open chat right now.');
+    }).finally(() => { chatBtn.disabled = false; });
+  });
+})();
+</script>
+
+<script>
+(function(){
   const sendBtn = document.getElementById('sendOwnerMessage');
   if (!sendBtn) return;
   sendBtn.addEventListener('click', function(){
@@ -385,14 +580,3 @@ try {
   });
 })();
 </script>
-// rating
-$avgRating = null;
-$ratingCount = 0;
-try {
-    $rs = $pdo->prepare('SELECT AVG(rating) as avg_r, COUNT(*) as cnt FROM reviews WHERE pg_id = ?');
-    $rs->execute([$id]);
-    $r = $rs->fetch(PDO::FETCH_ASSOC);
-    $avgRating = $r && $r['avg_r'] ? round((float)$r['avg_r'], 1) : null;
-    $ratingCount = $r ? (int)$r['cnt'] : 0;
-} catch (Throwable $e) {}
-if ($avgRating === null) $avgRating = pg_fallback_rating($id);

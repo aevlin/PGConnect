@@ -10,3 +10,32 @@ Name: Aleena
 Phone: 123456789
 Message: 
 
+2026-02-09 07:50:44 USER_REQUEST: New booking request: booking_id=4, pg_id=1048, user_id=4
+Name: Aleena
+Phone: 
+Message: hi
+
+2026-02-12 06:49:27 USER_REQUEST: New booking request: booking_id=5, pg_id=2031, user_id=4
+Name: Aleena
+Phone: 1234567890
+Move-in date: 2026-02-13
+Visit requested at: 2026-02-12 12:30:00
+Visit note: 
+Message: 
+
+2026-02-12 06:49:55 OWNER_ACTION: Your booking request (id=5) has been owner_approved. Please confirm to complete the booking.
+2026-02-12 06:50:01 OWNER_ACTION: Your booking request (id=3) has been owner_approved. Please confirm to complete the booking.
+2026-02-12 06:50:10 OWNER_ACTION: Your booking request (id=4) has been owner_approved. Please confirm to complete the booking.
+2026-02-12 06:50:28 USER_ACTION: booking_id=5 status=payment_pending
+2026-02-12 06:50:48 PAYMENT_SUCCESS: booking_id=5 ref=PGP-B6F4A3A2C1
+2026-02-12 06:54:06 USER_ACTION: booking_id=3 status=user_rejected
+2026-02-12 06:54:11 USER_ACTION: booking_id=4 status=user_rejected
+2026-02-12 07:36:50 USER_REQUEST: New booking request: booking_id=6, pg_id=7, user_id=4
+Name: Aleena
+Phone: 123456789
+Move-in date: 2026-02-12
+Message: 
+
+2026-02-12 07:37:37 OWNER_ACTION: Your booking request (id=6) has been owner_approved.
+2026-02-12 07:38:02 USER_ACTION: booking_id=6 status=payment_pending
+2026-02-12 07:39:14 PAYMENT_SUCCESS: booking_id=6 ref=PGP-D69FCF5949

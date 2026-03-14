@@ -10,8 +10,17 @@ function ensure_bookings_schema(PDO $pdo) {
         pg_id INT NOT NULL,
         contact_name VARCHAR(150) DEFAULT NULL,
         contact_phone VARCHAR(50) DEFAULT NULL,
+        move_in_date DATE DEFAULT NULL,
+        visit_requested TINYINT(1) DEFAULT 0,
+        visit_datetime DATETIME DEFAULT NULL,
+        visit_note VARCHAR(255) DEFAULT NULL,
         message TEXT DEFAULT NULL,
         status VARCHAR(30) DEFAULT 'requested',
+        payment_amount DECIMAL(10,2) DEFAULT NULL,
+        payment_status VARCHAR(20) DEFAULT 'unpaid',
+        payment_ref VARCHAR(120) DEFAULT NULL,
+        paid_at DATETIME DEFAULT NULL,
+        moved_out_at DATETIME DEFAULT NULL,
         owner_action_at DATETIME DEFAULT NULL,
         user_action_at DATETIME DEFAULT NULL,
         admin_notified_at DATETIME DEFAULT NULL,
@@ -32,8 +41,17 @@ function ensure_bookings_schema(PDO $pdo) {
 
     $add('contact_name', "VARCHAR(150) DEFAULT NULL");
     $add('contact_phone', "VARCHAR(50) DEFAULT NULL");
+    $add('move_in_date', "DATE DEFAULT NULL");
+    $add('visit_requested', "TINYINT(1) DEFAULT 0");
+    $add('visit_datetime', "DATETIME DEFAULT NULL");
+    $add('visit_note', "VARCHAR(255) DEFAULT NULL");
     $add('message', "TEXT DEFAULT NULL");
     $add('status', "VARCHAR(30) DEFAULT 'requested'");
+    $add('payment_amount', "DECIMAL(10,2) DEFAULT NULL");
+    $add('payment_status', "VARCHAR(20) DEFAULT 'unpaid'");
+    $add('payment_ref', "VARCHAR(120) DEFAULT NULL");
+    $add('paid_at', "DATETIME DEFAULT NULL");
+    $add('moved_out_at', "DATETIME DEFAULT NULL");
     $add('owner_action_at', "DATETIME DEFAULT NULL");
     $add('user_action_at', "DATETIME DEFAULT NULL");
     $add('admin_notified_at', "DATETIME DEFAULT NULL");

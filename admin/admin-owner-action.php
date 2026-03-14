@@ -1,13 +1,9 @@
 <?php
-session_start();
-if (!defined('BASE_URL')) define('BASE_URL', '/PGConnect');
-if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
-    header('Location: ' . BASE_URL . '/backend/login.php');
-    exit;
-}
-
+require_once '../backend/auth.php';
+require_role('admin');
 require_once '../backend/connect.php';
 require_once '../backend/user_schema.php';
+require_once '../backend/audit.php';
 
 ensure_user_profile_schema($pdo);
 
@@ -20,5 +16,6 @@ if (!$id || !in_array($action, ['approve','reject'], true)) {
 $status = $action === 'approve' ? 'verified' : 'rejected';
 $stmt = $pdo->prepare("UPDATE users SET owner_verification_status = ? WHERE id = ? AND role = 'owner'");
 $stmt->execute([$status, $id]);
+audit_log($pdo, 'admin_owner_' . $action, 'user', $id, 'owner_verification_status=' . $status);
 
 header('Location: admin-owners.php'); exit;

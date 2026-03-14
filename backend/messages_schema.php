@@ -22,6 +22,7 @@ function ensure_chat_schema(PDO $pdo) {
         recipient_role VARCHAR(10) DEFAULT NULL,
         message TEXT NOT NULL,
         is_read TINYINT(1) DEFAULT 0,
+        is_read_admin TINYINT(1) DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         INDEX idx_conv (conversation_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
@@ -34,5 +35,8 @@ function ensure_chat_schema(PDO $pdo) {
     }
     if (!in_array('is_read', $cols, true)) {
         $pdo->exec("ALTER TABLE messages ADD COLUMN is_read TINYINT(1) DEFAULT 0");
+    }
+    if (!in_array('is_read_admin', $cols, true)) {
+        $pdo->exec("ALTER TABLE messages ADD COLUMN is_read_admin TINYINT(1) DEFAULT 0");
     }
 }

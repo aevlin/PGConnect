@@ -2,6 +2,9 @@
 header('Content-Type: application/json');
 require_once 'connect.php';
 require_once __DIR__ . '/messages_schema.php';
+require_once __DIR__ . '/system_schema.php';
+require_once __DIR__ . '/notify.php';
+require_once __DIR__ . '/audit.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 if (!isset($_SESSION['user_id'])) {
@@ -21,6 +24,7 @@ if ($pgId <= 0 || $message === '') {
 
 try {
     ensure_chat_schema($pdo);
+    ensure_system_schema($pdo);
     // find owner and existing conversation
     $stmt = $pdo->prepare('SELECT owner_id FROM pg_listings WHERE id = ? LIMIT 1');
     $stmt->execute([$pgId]);
@@ -39,6 +43,8 @@ try {
     }
     $m = $pdo->prepare('INSERT INTO messages (conversation_id, sender_id, sender_role, recipient_role, message, is_read) VALUES (?, ?, ?, ?, ?, 0)');
     $m->execute([$convId, $userId, 'user', 'owner', $message]);
+    notify_user($pdo, $ownerId, 'owner', 'New chat message', 'You received a new message from a user.', '/PGConnect/owner/chat.php?c=' . $convId);
+    audit_log($pdo, 'chat_message_sent', 'conversation', (int)$convId, 'sender=user');
     echo json_encode(['ok' => true]);
 } catch (Exception $e) {
     http_response_code(500);

@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['user_role'] ?? '') !== 'owner') 
   exit;
 }
 
-$success = $error = '';
+$success = $error = $coordNotice = '';
 $user_id = $_SESSION['user_id'];
 $ownerVerified = true;
 try {
@@ -71,8 +71,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if ($sharing_type === '' || !in_array($sharing_type, $allowed_sharing, true)) {
     $sharing_type = 'single';
   }
-  $latitude = isset($_POST['latitude']) ? (float)$_POST['latitude'] : null;
-  $longitude = isset($_POST['longitude']) ? (float)$_POST['longitude'] : null;
+  $latRaw = trim((string)($_POST['latitude'] ?? ''));
+  $lngRaw = trim((string)($_POST['longitude'] ?? ''));
+  $latitude = ($latRaw === '') ? null : (float)$latRaw;
+  $longitude = ($lngRaw === '') ? null : (float)$lngRaw;
+
+  // Auto-correct common Google Maps paste mistake: longitude,latitude entered as latitude,longitude
+  if ($latitude !== null && $longitude !== null) {
+    $shouldSwap = false;
+    // Generic geo-range hint: latitude cannot exceed +/-90, longitude can be +/-180
+    if (($latitude < -90 || $latitude > 90) && $longitude >= -90 && $longitude <= 90 && $latitude >= -180 && $latitude <= 180) {
+      $shouldSwap = true;
+    }
+    // India-specific hint: if values look like [lng, lat] such as 76.x, 9.x
+    if (!$shouldSwap && $latitude >= 68 && $latitude <= 97 && $longitude >= 6 && $longitude <= 37) {
+      $shouldSwap = true;
+    }
+    if ($shouldSwap) {
+      $tmp = $latitude;
+      $latitude = $longitude;
+      $longitude = $tmp;
+      $coordNotice = 'Latitude/Longitude looked reversed, so we auto-corrected them for you.';
+    }
+  }
   $postedEditId = isset($_POST['edit_id']) ? (int)$_POST['edit_id'] : 0;
   $isEdit = $postedEditId > 0 || $edit_id > 0;
   if ($postedEditId > 0) $edit_id = $postedEditId;
@@ -93,6 +114,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $error = 'Capacity must be at least 1';
   } elseif ($available_beds < 0 || $available_beds > $capacity) {
     $error = 'Available beds must be between 0 and total capacity';
+  } elseif (($latitude !== null && ($latitude < -90 || $latitude > 90)) || ($longitude !== null && ($longitude < -180 || $longitude > 180))) {
+    $error = 'Invalid latitude/longitude values.';
+  } elseif (($latitude === null) xor ($longitude === null)) {
+    $error = 'Please provide both latitude and longitude, or leave both blank.';
   } else {
     // Insert or update PG listing (starts as pending for admin approval on new)
     if ($isEdit && $edit_id > 0) {
@@ -107,6 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($ok) {
           $pg_id = $edit_id;
           $success = 'PG updated successfully.';
+          if ($coordNotice !== '') $success .= ' ' . $coordNotice;
         } else {
           $error = 'Failed to update PG.';
         }
@@ -118,6 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       if ($stmt->execute([$user_id, $pg_code, $pg_name, $district, $state, $location_area, $city, $address, $occupancy_type, $capacity, $available_beds, $occupancy_status, $monthly_rent, $amenities, $sharing_type, $latitude, $longitude, $newStatus])) {
         $pg_id = $pdo->lastInsertId();
         $success = 'PG added successfully! Awaiting admin approval.';
+        if ($coordNotice !== '') $success .= ' ' . $coordNotice;
       } else {
         $error = 'Failed to add PG. Try again.';
       }
@@ -259,12 +286,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
             <h4><?php echo htmlspecialchars($success); ?></h4>
             <a href="owner-dashboard.php" class="btn btn-gradient px-4">View Dashboard</a>
-            <a href="#" class="btn btn-outline-primary px-4 ms-2">Add Another PG</a>
+            <a href="owner-add-pg.php" class="btn btn-outline-primary px-4 ms-2">Add Another PG</a>
           </div>
         <?php endif; ?>
 
         <?php if ($error): ?>
           <div class="alert alert-danger rounded-3"><?php echo htmlspecialchars($error); ?></div>
+        <?php endif; ?>
+        <?php if ($coordNotice && !$success): ?>
+          <div class="alert alert-info rounded-3"><?php echo htmlspecialchars($coordNotice); ?></div>
         <?php endif; ?>
 
         <?php if (!$success): ?>
@@ -359,15 +389,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <!-- Location -->
                 <div class="col-md-6">
                   <label class="form-label fw-semibold mb-2">Latitude</label>
-        <input type="number" step="any" name="latitude" class="form-control form-control-lg" 
+        <input type="number" step="any" name="latitude" id="pgLatitude" class="form-control form-control-lg" 
           value="<?php echo htmlspecialchars($_POST['latitude'] ?? $existing['latitude'] ?? ''); ?>" placeholder="12.911000">
-                  <small class="text-muted">Get from Google Maps</small>
+                  <small class="text-muted">Click map below to auto-fill</small>
                 </div>
                 <div class="col-md-6">
                   <label class="form-label fw-semibold mb-2">Longitude</label>
-        <input type="number" step="any" name="longitude" class="form-control form-control-lg" 
+        <input type="number" step="any" name="longitude" id="pgLongitude" class="form-control form-control-lg" 
           value="<?php echo htmlspecialchars($_POST['longitude'] ?? $existing['longitude'] ?? ''); ?>" placeholder="77.641000">
-                  <small class="text-muted">Get from Google Maps</small>
+                  <small class="text-muted">Click map below to auto-fill</small>
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-semibold mb-2">Pick Location on Map</label>
+                  <div id="ownerLocationMap" style="height:280px;border:1px solid #d1d5db;border-radius:14px;overflow:hidden;"></div>
+                  <small class="text-muted">Tip: Click on the exact PG position, or drag the marker.</small>
                 </div>
 
                 <!-- Images -->
@@ -422,3 +457,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </section>
 
 <?php require_once '../includes/footer.php'; ?>
+<script>
+(function(){
+  const latInput = document.getElementById('pgLatitude');
+  const lngInput = document.getElementById('pgLongitude');
+  const mapEl = document.getElementById('ownerLocationMap');
+  if (!latInput || !lngInput || !mapEl || typeof L === 'undefined') return;
+
+  let lat = parseFloat(latInput.value);
+  let lng = parseFloat(lngInput.value);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    // default India center
+    lat = 20.5937;
+    lng = 78.9629;
+  }
+  const hasExact = Number.isFinite(parseFloat(latInput.value)) && Number.isFinite(parseFloat(lngInput.value));
+  const zoom = hasExact ? 15 : 5;
+
+  const map = L.map('ownerLocationMap').setView([lat, lng], zoom);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  const marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+
+  function setLatLng(newLat, newLng) {
+    latInput.value = Number(newLat).toFixed(6);
+    lngInput.value = Number(newLng).toFixed(6);
+    marker.setLatLng([newLat, newLng]);
+  }
+
+  map.on('click', function(e){
+    setLatLng(e.latlng.lat, e.latlng.lng);
+  });
+
+  marker.on('dragend', function(e){
+    const p = e.target.getLatLng();
+    setLatLng(p.lat, p.lng);
+  });
+
+  function syncFromInputs() {
+    const iLat = parseFloat(latInput.value);
+    const iLng = parseFloat(lngInput.value);
+    if (!Number.isFinite(iLat) || !Number.isFinite(iLng)) return;
+    marker.setLatLng([iLat, iLng]);
+    map.panTo([iLat, iLng]);
+  }
+
+  latInput.addEventListener('change', syncFromInputs);
+  lngInput.addEventListener('change', syncFromInputs);
+
+  setTimeout(() => map.invalidateSize(), 200);
+})();
+</script>

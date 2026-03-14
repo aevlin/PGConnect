@@ -1,11 +1,9 @@
 <?php
-require_once '../includes/header.php';
 require_once '../backend/connect.php';
 require_once '../backend/messages_schema.php';
-if (session_status() === PHP_SESSION_NONE) session_start();
-if (!isset($_SESSION['user_id']) || ($_SESSION['user_role'] ?? '') !== 'owner') {
-    header('Location: ../backend/login.php'); exit;
-}
+require_once '../backend/auth.php';
+require_role('owner');
+require_once '../includes/header.php';
 
 ensure_chat_schema($pdo);
 $ownerId = (int)$_SESSION['user_id'];
@@ -13,11 +11,13 @@ $ownerId = (int)$_SESSION['user_id'];
 $conversations = [];
 $activeId = isset($_GET['c']) ? (int)$_GET['c'] : 0;
 try {
-    $stmt = $pdo->prepare('SELECT c.id, p.pg_name, u.name AS user_name,
-        (SELECT COUNT(*) FROM messages m WHERE m.conversation_id = c.id AND m.recipient_role = \"owner\" AND m.is_read = 0) AS unread_count
+    $stmt = $pdo->prepare('SELECT c.id,
+        COALESCE(p.pg_name, "PG") AS pg_name,
+        COALESCE(u.name, "User") AS user_name,
+        (SELECT COUNT(*) FROM messages m WHERE m.conversation_id = c.id AND m.sender_role = "user" AND m.is_read = 0) AS unread_count
         FROM conversations c
-        JOIN pg_listings p ON p.id = c.pg_id
-        JOIN users u ON u.id = c.user_id
+        LEFT JOIN pg_listings p ON p.id = c.pg_id
+        LEFT JOIN users u ON u.id = c.user_id
         WHERE c.owner_id = ?
         ORDER BY c.created_at DESC');
     $stmt->execute([$ownerId]);
@@ -31,7 +31,7 @@ if ($activeId) {
     $m->execute([$activeId]);
     $messages = $m->fetchAll(PDO::FETCH_ASSOC);
     // mark messages as read for owner
-    $pdo->prepare('UPDATE messages SET is_read = 1 WHERE conversation_id = ? AND recipient_role = \"owner\"')->execute([$activeId]);
+    $pdo->prepare("UPDATE messages SET is_read = 1 WHERE conversation_id = ? AND recipient_role = 'owner'")->execute([$activeId]);
 }
 ?>
 

@@ -1,11 +1,9 @@
 <?php
 // admin/admin-approve.php
-session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
-    header('Location: ../backend/login.php');
-    exit;
-}
+require_once '../backend/auth.php';
+require_role('admin');
 require_once '../backend/connect.php';
+require_once '../backend/audit.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pgId   = (int)($_POST['pg_id'] ?? 0);
@@ -19,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':status' => $newStatus,
             ':id'     => $pgId
         ]);
+        audit_log($pdo, 'admin_pg_' . $action, 'pg_listing', $pgId, 'status=' . $newStatus);
     }
 }
 

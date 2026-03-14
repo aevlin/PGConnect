@@ -87,6 +87,7 @@ require_once '../includes/header.php';
           <td>
             <div class="d-flex gap-2">
               <a href="owner-add-pg.php?id=<?php echo (int)$pg['id']; ?>" class="btn btn-sm btn-gradient">Edit</a>
+              <a href="owner-availability.php?pg_id=<?php echo (int)$pg['id']; ?>" class="btn btn-sm btn-outline-secondary">Availability</a>
               <a href="owner-bookings.php?pg_id=<?php echo (int)$pg['id']; ?>" class="btn btn-sm btn-outline-primary">Bookings</a>
             </div>
           </td>

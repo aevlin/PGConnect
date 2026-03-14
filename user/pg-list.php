@@ -14,11 +14,17 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <section class="section-shell">
   <div class="container py-4">
+    <?php if (!isset($_SESSION['user_id'])): ?>
+      <div class="alert alert-warning mb-4">
+        Please <a href="<?php echo BASE_URL; ?>/backend/login.php">login</a> or
+        <a href="<?php echo BASE_URL; ?>/backend/signup.php">sign up</a> to save PGs, compare, or make booking requests.
+      </div>
+    <?php endif; ?>
     <h1 class="h4 mb-4">Available PGs</h1>
 
     <div class="row g-3">
       <?php foreach ($rows as $row): 
-        $fallback = 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=900&h=600';
+        $fallback = pg_fallback_image((int)$row['id']);
         $img = $row['cover_image'] ?: '';
         if (empty($img)) {
           $img = $fallback;

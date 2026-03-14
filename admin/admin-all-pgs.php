@@ -12,7 +12,7 @@ require_once '../backend/connect.php';
 $pgs = [];
 $queryError = '';
 try {
-    $stmt = $pdo->query("SELECT p.id, p.pg_name, p.city, p.address AS location, p.monthly_rent AS rent, p.status, u.name AS owner_name,
+    $stmt = $pdo->query("SELECT p.id, p.pg_name, p.city, p.address AS location, p.monthly_rent AS rent, p.status, p.occupancy_status, u.name AS owner_name,
            (SELECT image_path FROM pg_images WHERE pg_id = p.id ORDER BY id LIMIT 1) AS cover_image
          FROM pg_listings p
          JOIN users u ON p.owner_id = u.id
@@ -55,8 +55,9 @@ try {
         <th>Owner</th>
         <th>City</th>
         <th>Rent (₹)</th>
+        <th>Occupancy</th>
         <th>Status</th>
-        <th style="width: 160px;">Action</th>
+        <th style="width: 220px;">Action</th>
       </tr>
     </thead>
     <tbody>
@@ -67,7 +68,7 @@ try {
         <td>
           <?php
           $img = $pg['cover_image'] ?? '';
-          $fallback = pg_image_url('uploads/default-pg.jpg');
+          $fallback = pg_fallback_image((int)$pg['id']);
           if (empty($img)) $img = $fallback;
           else $img = pg_image_url($img, $fallback);
           ?>
@@ -79,6 +80,7 @@ try {
         <td><?php echo htmlspecialchars($pg['owner_name']); ?></td>
         <td><?php echo htmlspecialchars($pg['city']); ?></td>
         <td><?php echo (int)$pg['rent']; ?></td>
+        <td><?php echo htmlspecialchars(ucwords(str_replace('_',' ', $pg['occupancy_status'] ?? ''))); ?></td>
         <td>
           <?php if ($pg['status'] === 'approved'): ?>
             <span class="badge bg-success">Approved</span>
@@ -90,6 +92,7 @@ try {
           <div class="d-flex gap-1">
             <button type="button" class="btn btn-success btn-sm admin-action" data-id="<?php echo (int)$pg['id']; ?>" data-action="approve">Approve</button>
             <button type="button" class="btn btn-outline-danger btn-sm admin-action" data-id="<?php echo (int)$pg['id']; ?>" data-action="reject">Reject</button>
+            <a href="admin-edit-pg.php?id=<?php echo (int)$pg['id']; ?>" class="btn btn-outline-primary btn-sm">Edit</a>
           </div>
         </td>
       </tr>

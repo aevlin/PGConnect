@@ -36,7 +36,7 @@ try {
     <div class="row g-3">
       <?php foreach ($rows as $row): 
         $img = $row['cover_image'] ?: '';
-        $fallback = 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=900';
+        $fallback = pg_fallback_image((int)$row['id']);
         if (empty($img)) $img = $fallback;
         else $img = pg_image_url($img, $fallback);
       ?>

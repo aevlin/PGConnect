@@ -37,6 +37,20 @@ function pg_fallback_rating($pgId) {
   $r = 3.6 + ($seed / 233280) * 1.3; // 3.6 - 4.9
   return round($r, 1);
 }
+
+// Deterministic fallback images for PGs without uploads
+function pg_fallback_image($pgId) {
+  $imgs = [
+    'https://images.pexels.com/photos/1457841/pexels-photo-1457841.jpeg',
+    'https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg',
+    'https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg',
+    'https://images.pexels.com/photos/1454806/pexels-photo-1454806.jpeg',
+    'https://images.pexels.com/photos/271618/pexels-photo-271618.jpeg',
+    'https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg'
+  ];
+  $idx = abs((int)$pgId) % count($imgs);
+  return $imgs[$idx];
+}
 ?>
 <!doctype html>
 <html lang="en">
@@ -44,6 +58,8 @@ function pg_fallback_rating($pgId) {
   <meta charset="utf-8">
   <title><?php echo htmlspecialchars($page_title); ?> – Find PGs Across India</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="manifest" href="<?php echo BASE_URL; ?>/manifest.webmanifest">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
@@ -100,18 +116,62 @@ function pg_fallback_rating($pgId) {
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="mainNav">
+      <?php $hideNavForAuth = in_array(basename($_SERVER['PHP_SELF'] ?? ''), ['login.php', 'signup.php'], true); ?>
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0 me-3">
-        <?php if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] === 'user'): ?>
+        <?php if (!$hideNavForAuth && (!isset($_SESSION['user_role']) || $_SESSION['user_role'] === 'user')): ?>
           <li class="nav-item"><a class="nav-link" href="<?php echo BASE_URL; ?>/user/pg-listings.php">PGs</a></li>
         <?php endif; ?>
-        <?php if (isset($_SESSION['user_id'])): ?>
+        <?php
+          $isLoggedIn = isset($_SESSION['user_id']);
+          if ($isLoggedIn) {
+            if (($_SESSION['user_role'] ?? '') === 'owner') $chatPath = '/owner/chat.php';
+            elseif (($_SESSION['user_role'] ?? '') === 'admin') $chatPath = '/admin/chat.php';
+            else $chatPath = '/user/chat.php';
+          } else {
+            $chatPath = '/backend/login.php';
+          }
+        ?>
+        <?php if (!$hideNavForAuth): ?>
           <li class="nav-item">
-            <?php $chatPath = (($_SESSION['user_role'] ?? '') === 'owner') ? '/owner/chat.php' : '/user/chat.php'; ?>
             <a class="nav-link chat-link" href="<?php echo BASE_URL . $chatPath; ?>">
               <i class="fa-solid fa-comment-dots"></i> Chat
-              <span class="badge bg-danger rounded-pill ms-1" id="chatCountBadge">0</span>
+              <?php if ($isLoggedIn): ?>
+                <span class="badge bg-danger rounded-pill ms-1" id="chatCountBadge" style="display:none;">0</span>
+              <?php endif; ?>
             </a>
           </li>
+        <?php endif; ?>
+        <?php if ($isLoggedIn): ?>
+          <?php if (!$hideNavForAuth): ?>
+            <li class="nav-item dropdown">
+              <a class="nav-link position-relative" href="#" data-bs-toggle="dropdown" id="notificationBell">
+                <i class="fa fa-bell"></i>
+                <span class="badge bg-danger rounded-pill ms-1" id="notificationCountBadge" style="display:none;">0</span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end p-0" style="min-width:320px;">
+                <li class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                  <strong class="small">Notifications</strong>
+                  <button class="btn btn-link btn-sm p-0" id="markAllNotificationsRead">Mark all read</button>
+                </li>
+                <li id="notificationListWrap">
+                  <div class="px-3 py-2 small text-muted">No notifications.</div>
+                </li>
+              </ul>
+            </li>
+          <?php endif; ?>
+          <?php if (($_SESSION['user_role'] ?? '') === 'owner' && !$hideNavForAuth): ?>
+            <li class="nav-item">
+              <a class="nav-link position-relative" href="<?php echo BASE_URL; ?>/owner/owner-bookings.php">
+                Booking Requests
+                <span class="badge bg-danger rounded-pill ms-1" id="ownerBookingCountBadge" style="display:none;">0</span>
+              </a>
+            </li>
+          <?php endif; ?>
+          <?php if (($_SESSION['user_role'] ?? '') === 'user' && !$hideNavForAuth): ?>
+            <li class="nav-item">
+              <a class="nav-link" href="<?php echo BASE_URL; ?>/user/booking-request.php">Bookings</a>
+            </li>
+          <?php endif; ?>
           <li class="nav-item">
             <a class="nav-link position-relative" href="<?php echo BASE_URL; ?>/user/my-favorites.php">
               <i class="fa fa-heart"></i>
@@ -134,11 +194,17 @@ function pg_fallback_rating($pgId) {
             <ul class="dropdown-menu">
               <?php if($_SESSION['user_role'] == 'owner'): ?>
                 <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/owner/owner-dashboard.php">Owner Dashboard</a></li>
+                <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/owner/tickets.php">Service Tickets</a></li>
+                <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/owner/owner-reviews.php">PG Reviews</a></li>
                 <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/owner/owner-profile.php">My Profile</a></li>
               <?php elseif($_SESSION['user_role'] == 'admin'): ?>
                 <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/admin/admin-dashboard.php">Admin Panel</a></li>
+                <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/admin/admin-tickets.php">Tickets Monitor</a></li>
+                <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/admin/admin-reviews.php">Review Moderation</a></li>
               <?php else: ?>
                 <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/user/user-profile.php">User Dashboard</a></li>
+                <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/user/tickets.php">Service Tickets</a></li>
+                <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/user/saved-searches.php">Saved Searches</a></li>
                 <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/user/user-profile-edit.php">My Profile</a></li>
               <?php endif; ?>
               <li><hr class="dropdown-divider"></li>

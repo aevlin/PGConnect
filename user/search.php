@@ -4,6 +4,7 @@ require_once '../backend/connect.php';
 require_once '../backend/config.php';
 require_once '../backend/booking_schema.php';
 require_once '../backend/reviews_schema.php';
+require_once '../backend/feature_schema.php';
 
 // Debugging helpers: log incoming requests and optionally enable display_errors via ?debug=1
 $debugLog = __DIR__ . '/../backend/search_debug.log';
@@ -103,6 +104,26 @@ if ($sharing !== '') {
 $lat = isset($_GET['lat']) && is_numeric($_GET['lat']) ? (float)$_GET['lat'] : null;
 $lng = isset($_GET['lng']) && is_numeric($_GET['lng']) ? (float)$_GET['lng'] : null;
 $radius = isset($_GET['radius']) && is_numeric($_GET['radius']) ? (float)$_GET['radius'] : null;
+
+if ($lat !== null && ($lat < -90 || $lat > 90)) $lat = null;
+if ($lng !== null && ($lng < -180 || $lng > 180)) $lng = null;
+
+if (isset($_SESSION['user_id']) && ($_SESSION['user_role'] ?? '') === 'user') {
+    ensure_feature_schema($pdo);
+    if (isset($_GET['save_search']) && $_GET['save_search'] == '1') {
+        $ins = $pdo->prepare('INSERT INTO saved_searches (user_id, city, min_rent, max_rent, sharing, is_active, last_match_count) VALUES (?, ?, ?, ?, ?, 1, 0)');
+        $ins->execute([
+            (int)$_SESSION['user_id'],
+            $city !== '' ? $city : null,
+            $min_rent !== '' ? (int)$min_rent : null,
+            $max_rent !== '' ? (int)$max_rent : null,
+            $sharing !== '' ? $sharing : null
+        ]);
+        $_SESSION['search_saved_flash'] = 'Search alert saved.';
+        header('Location: search.php?city=' . urlencode($city) . '&min_rent=' . urlencode((string)$min_rent) . '&max_rent=' . urlencode((string)$max_rent) . '&sharing=' . urlencode($sharing));
+        exit;
+    }
+}
 
 // Count total results and fetch rows, wrapped in try/catch to avoid white pages on DB errors
 try {
@@ -270,6 +291,15 @@ if (isset($_SESSION['user_id'])) {
 
 <section class="section-shell">
   <div class="container py-5">
+    <?php if (!empty($_SESSION['search_saved_flash'])): ?>
+      <div class="alert alert-success"><?php echo htmlspecialchars($_SESSION['search_saved_flash']); unset($_SESSION['search_saved_flash']); ?></div>
+    <?php endif; ?>
+    <?php if (!isset($_SESSION['user_id'])): ?>
+      <div class="alert alert-warning mb-4">
+        Please <a href="<?php echo BASE_URL; ?>/backend/login.php">login</a> or
+        <a href="<?php echo BASE_URL; ?>/backend/signup.php">sign up</a> to save PGs, compare, or make booking requests.
+      </div>
+    <?php endif; ?>
     <!-- Search form -->
     <div class="row mb-5">
         <div class="col-12">
@@ -309,6 +339,12 @@ if (isset($_SESSION['user_id'])) {
                             <label class="form-label">&nbsp;</label>
                             <a href="search.php" class="btn btn-outline-secondary w-100">Clear</a>
                         </div>
+                        <?php if (isset($_SESSION['user_id']) && ($_SESSION['user_role'] ?? '') === 'user'): ?>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <a href="search.php?city=<?php echo urlencode($city); ?>&min_rent=<?php echo urlencode((string)$min_rent); ?>&max_rent=<?php echo urlencode((string)$max_rent); ?>&sharing=<?php echo urlencode($sharing); ?>&save_search=1" class="btn btn-outline-success w-100">Save Alert</a>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </form>
@@ -336,7 +372,7 @@ if (isset($_SESSION['user_id'])) {
         <div class="row g-4 mb-5">
             <?php foreach ($rows as $row): 
                 $img = $row['cover_image'] ?: '';
-                $fallback = 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=900';
+                $fallback = pg_fallback_image((int)$row['id']);
                 if (empty($img)) {
                     $img = $fallback;
                 } else {

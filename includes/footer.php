@@ -207,6 +207,91 @@ try { if (typeof refreshFavCount === 'function') refreshFavCount(); } catch(e) {
 </script>
 
 <script>
+// Update owner booking-request badge
+(function(){
+  const badge = document.getElementById('ownerBookingCountBadge');
+  if (!badge) return;
+  fetch('<?php echo BASE_URL; ?>/backend/owner_booking_count.php')
+    .then(r => r.json())
+    .then(j => {
+      const c = (j && typeof j.count !== 'undefined') ? j.count : 0;
+      badge.innerText = c;
+      badge.style.display = c > 0 ? 'inline-block' : 'none';
+    }).catch(()=>{});
+})();
+</script>
+
+<script>
+// Notification center badge/list
+(function(){
+  const badge = document.getElementById('notificationCountBadge');
+  const listWrap = document.getElementById('notificationListWrap');
+  const markBtn = document.getElementById('markAllNotificationsRead');
+  if (!badge || !listWrap) return;
+
+  function esc(s){
+    return String(s || '').replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  function loadCount(){
+    fetch('<?php echo BASE_URL; ?>/backend/notifications_count.php')
+      .then(r => r.json())
+      .then(j => {
+        const c = (j && typeof j.count !== 'undefined') ? j.count : 0;
+        badge.innerText = c;
+        badge.style.display = c > 0 ? 'inline-block' : 'none';
+      }).catch(()=>{});
+  }
+
+  function loadList(){
+    fetch('<?php echo BASE_URL; ?>/backend/notifications_list.php')
+      .then(r => r.json())
+      .then(j => {
+        if (!j || !j.ok || !Array.isArray(j.items) || j.items.length === 0) {
+          listWrap.innerHTML = '<div class="px-3 py-2 small text-muted">No notifications.</div>';
+          return;
+        }
+        let html = '';
+        j.items.forEach(it => {
+          const title = esc(it.title);
+          const msg = esc(it.message);
+          const dt = esc(it.created_at);
+          const url = it.link ? esc(it.link) : '';
+          html += '<a class="dropdown-item small border-bottom py-2' + (it.is_read == 0 ? ' bg-light' : '') + '" href="' + (url || '#') + '">';
+          html += '<div class="fw-semibold">' + title + '</div>';
+          if (msg) html += '<div class="text-muted">' + msg + '</div>';
+          html += '<div class="text-muted" style="font-size:11px;">' + dt + '</div></a>';
+        });
+        listWrap.innerHTML = html;
+      }).catch(()=>{});
+  }
+
+  loadCount();
+  loadList();
+
+  if (markBtn) {
+    markBtn.addEventListener('click', function(e){
+      e.preventDefault();
+      fetch('<?php echo BASE_URL; ?>/backend/notifications_mark_read.php', { method: 'POST' })
+        .then(() => { loadCount(); loadList(); })
+        .catch(()=>{});
+    });
+  }
+})();
+</script>
+
+<script>
+// Trigger saved-search alert checks for logged-in users (best effort, lightweight)
+(function(){
+  <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'user'): ?>
+    fetch('<?php echo BASE_URL; ?>/backend/run_saved_search_alerts.php').catch(()=>{});
+  <?php endif; ?>
+})();
+</script>
+
+<script>
 // Init compare badge from session if present (server sets data attribute)
 (function(){
   const badge = document.getElementById('compareCountBadge');
@@ -234,7 +319,25 @@ document.addEventListener('click', function (e) {
         b.innerText = j.action === 'added' ? 'Compared' : 'Compare';
         const badge = document.getElementById('compareCountBadge');
         if (badge) badge.innerText = j.count || 0;
+      } else if (j && j.error === 'auth_required') {
+        alert('Please login to compare PGs');
+        window.location.href = '<?php echo BASE_URL; ?>/backend/login.php';
+      } else {
+        alert('Unable to update compare list right now.');
       }
-    }).catch(()=>{}).finally(()=>{ b.disabled = false; });
+    }).catch(()=>{
+      alert('Unable to update compare list right now.');
+    }).finally(()=>{ b.disabled = false; });
 });
+</script>
+
+<script>
+// PWA service worker
+(function(){
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('<?php echo BASE_URL; ?>/sw.js').catch(function(){});
+    });
+  }
+})();
 </script>

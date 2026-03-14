@@ -1,4 +1,39 @@
-<?php if (!defined('BASE_URL')) define('BASE_URL', '/PGConnect'); ?>
+<?php
+if (!defined('BASE_URL')) define('BASE_URL', '/PGConnect');
+if (session_status() === PHP_SESSION_NONE) {
+  @session_set_cookie_params(0, '/');
+  session_start();
+}
+require_once __DIR__ . '/backend/connect.php';
+require_once __DIR__ . '/backend/config.php';
+
+function pg_fallback_image($pgId) {
+  $imgs = [
+    'https://images.pexels.com/photos/1457841/pexels-photo-1457841.jpeg',
+    'https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg',
+    'https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg',
+    'https://images.pexels.com/photos/1454806/pexels-photo-1454806.jpeg',
+    'https://images.pexels.com/photos/271618/pexels-photo-271618.jpeg',
+    'https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg'
+  ];
+  return $imgs[abs((int)$pgId) % count($imgs)];
+}
+
+$statusWhere = (defined('SHOW_PENDING_LISTINGS') && SHOW_PENDING_LISTINGS) ? "IN ('approved','pending')" : "= 'approved'";
+$bestPgs = [];
+try {
+  $stmt = $pdo->prepare("SELECT p.id, p.pg_name, p.city, p.address, p.monthly_rent, p.capacity, p.sharing_type,
+          (SELECT image_path FROM pg_images WHERE pg_id = p.id ORDER BY id LIMIT 1) AS cover_image
+        FROM pg_listings p
+        WHERE p.status $statusWhere
+        ORDER BY p.created_at DESC
+        LIMIT 4");
+  $stmt->execute();
+  $bestPgs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Throwable $e) {
+  $bestPgs = [];
+}
+?>
 <!doctype html>
 <html lang="en">
 <head>
@@ -188,7 +223,7 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-light fixed-top">
   <div class="container">
-    <a class="navbar-brand d-flex align-items-center gap-2" href="index.php">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="<?php echo BASE_URL; ?>/index.php">
       <span class="badge rounded-circle bg-primary text-white fw-bold">PG</span>
       <span>PGCONNECT</span>
     </a>
@@ -200,10 +235,29 @@
         <li class="nav-item"><a class="nav-link" href="#listings">PGs</a></li>
         <li class="nav-item"><a class="nav-link" href="#owners">For owners</a></li>
       </ul>
-      <div class="d-flex gap-2">
-        <a href="backend/login.php" class="btn btn-outline-secondary btn-sm px-3">Login</a>
-        <a href="backend/signup.php" class="btn btn-primary btn-sm px-3">Sign Up</a>
-      </div>
+      <?php if (!isset($_SESSION['user_id'])): ?>
+        <div class="d-flex gap-2">
+          <a href="<?php echo BASE_URL; ?>/backend/login.php" class="btn btn-outline-secondary btn-sm px-3">Login</a>
+          <a href="<?php echo BASE_URL; ?>/backend/signup.php" class="btn btn-primary btn-sm px-3">Sign Up</a>
+        </div>
+      <?php else: ?>
+        <ul class="navbar-nav mb-2 mb-lg-0">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><?php echo htmlspecialchars($_SESSION['user_name'] ?? 'User'); ?></a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <?php if (($_SESSION['user_role'] ?? '') === 'owner'): ?>
+                <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/owner/owner-dashboard.php">Owner Dashboard</a></li>
+              <?php elseif (($_SESSION['user_role'] ?? '') === 'admin'): ?>
+                <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/admin/admin-dashboard.php">Admin Panel</a></li>
+              <?php else: ?>
+                <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/user/user-profile.php">User Dashboard</a></li>
+              <?php endif; ?>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/logout.php">Logout</a></li>
+            </ul>
+          </li>
+        </ul>
+      <?php endif; ?>
     </div>
   </div>
 </nav>
@@ -240,7 +294,7 @@
             <button class="btn btn-sm flex-fill rounded-pill" type="button">Students</button>
             <button class="btn btn-sm flex-fill rounded-pill" type="button">Co‑living</button>
           </div>
-          <form action="user/search.php" method="GET">
+          <form action="user/pg-listings.php" method="GET">
             <div class="row g-2 align-items-end">
               <div class="col-md-4">
                 <label class="form-label small mb-1">City / Area</label>
@@ -322,86 +376,35 @@
           <a href="user/pg-listings.php" class="small text-primary">View all →</a>
         </div>
         <div class="row g-3">
-          <div class="col-md-6">
-            <article class="pg-card h-100">
-              <img src="https://images.pexels.com/photos/1457841/pexels-photo-1457841.jpeg" class="w-100" alt="Mumbai PG">
-              <div class="p-3">
-                <div class="d-flex justify-content-between mb-1 small">
-                  <span>Premium Gents PG – 2 sharing</span>
-                  <span class="text-warning fw-semibold">₹18,000/mo</span>
-                </div>
-                <p class="small text-muted mb-2">Andheri East, Mumbai • 5 min from metro • All meals</p>
-                <div class="d-flex flex-wrap gap-2">
-                  <span class="tag">Working professionals</span>
-                  <span class="tag">Attached washroom</span>
-                  <span class="tag">Wi‑Fi</span>
-                </div>
-                <div class="mt-3">
-                  <a href="user/pg-detail.php?id=1" class="btn btn-sm btn-outline-primary">View details</a>
-                </div>
+          <?php if (empty($bestPgs)): ?>
+            <div class="col-12"><div class="alert alert-info">No PGs to show yet.</div></div>
+          <?php else: ?>
+            <?php foreach ($bestPgs as $pg): 
+              $img = $pg['cover_image'] ?: '';
+              if ($img && !preg_match('#^(https?://|/)#', $img)) $img = BASE_URL . '/' . ltrim($img, '/');
+              if (!$img) $img = pg_fallback_image((int)$pg['id']);
+            ?>
+              <div class="col-md-6">
+                <article class="pg-card h-100">
+                  <img src="<?php echo htmlspecialchars($img); ?>" class="w-100" alt="PG">
+                  <div class="p-3">
+                    <div class="d-flex justify-content-between mb-1 small">
+                      <span><?php echo htmlspecialchars($pg['pg_name']); ?></span>
+                      <span class="text-warning fw-semibold">₹<?php echo number_format((float)$pg['monthly_rent']); ?>/mo</span>
+                    </div>
+                    <p class="small text-muted mb-2"><?php echo htmlspecialchars($pg['address']); ?></p>
+                    <div class="d-flex flex-wrap gap-2">
+                      <span class="tag"><?php echo htmlspecialchars(ucfirst($pg['sharing_type'])); ?></span>
+                      <span class="tag"><?php echo (int)$pg['capacity']; ?> beds</span>
+                    </div>
+                    <div class="mt-3">
+                      <a href="user/pg-detail.php?id=<?php echo (int)$pg['id']; ?>" class="btn btn-sm btn-outline-primary">View details</a>
+                    </div>
+                  </div>
+                </article>
               </div>
-            </article>
-          </div>
-
-          <div class="col-md-6">
-            <article class="pg-card h-100">
-              <img src="https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg" class="w-100" alt="Bangalore PG">
-              <div class="p-3">
-                <div class="d-flex justify-content-between mb-1 small">
-                  <span>Ladies PG near ITPL</span>
-                  <span class="text-warning fw-semibold">₹14,500/mo</span>
-                </div>
-                <p class="small text-muted mb-2">Whitefield, Bangalore • Shuttle to IT parks</p>
-                <div class="d-flex flex-wrap gap-2">
-                  <span class="tag">CCTV 24x7</span>
-                  <span class="tag">AC rooms</span>
-                </div>
-                <div class="mt-3">
-                  <a href="user/pg-detail.php?id=2" class="btn btn-sm btn-outline-primary">View details</a>
-                </div>
-              </div>
-            </article>
-          </div>
-
-          <div class="col-md-6">
-            <article class="pg-card h-100">
-              <img src="https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg" class="w-100" alt="Delhi PG">
-              <div class="p-3">
-                <div class="d-flex justify-content-between mb-1 small">
-                  <span>Co‑living near Dwarka</span>
-                  <span class="text-warning fw-semibold">₹19,800/mo</span>
-                </div>
-                <p class="small text-muted mb-2">Dwarka, Delhi • Fully‑furnished • Gym access</p>
-                <div class="d-flex flex-wrap gap-2">
-                  <span class="tag">Couples OK</span>
-                  <span class="tag">Kitchen</span>
-                </div>
-                <div class="mt-3">
-                  <a href="user/pg-detail.php?id=3" class="btn btn-sm btn-outline-primary">View details</a>
-                </div>
-              </div>
-            </article>
-          </div>
-
-          <div class="col-md-6">
-            <article class="pg-card h-100">
-              <img src="https://images.pexels.com/photos/1454806/pexels-photo-1454806.jpeg" class="w-100" alt="Kochi PG">
-              <div class="p-3">
-                <div class="d-flex justify-content-between mb-1 small">
-                  <span>Kadavanthra Premium PG</span>
-                  <span class="text-warning fw-semibold">₹12,000/mo</span>
-                </div>
-                <p class="small text-muted mb-2">Kadavanthra, Kochi • 8 min from metro</p>
-                <div class="d-flex flex-wrap gap-2">
-                  <span class="tag">AC available</span>
-                  <span class="tag">Parking</span>
-                </div>
-                <div class="mt-3">
-                  <a href="user/pg-detail.php?id=4" class="btn btn-sm btn-outline-primary">View details</a>
-                </div>
-              </div>
-            </article>
-          </div>
+            <?php endforeach; ?>
+          <?php endif; ?>
         </div>
       </div>
 
@@ -718,7 +721,7 @@
           if (parts[1]) maxInput.value = parts[1];
         }
       }
-      // allow normal GET submit to user/search.php
+      // allow normal GET submit to user/pg-listings.php
     });
 
     // Prefill hero form from URL params if present

@@ -64,3 +64,51 @@ SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in you
              ...' at line 4
 Check /Applications/XAMPP/xamppfiles/htdocs/PGConnect/backend/getPgs.log
 
+2026-02-08 11:02:29 ALERT: PGConnect: repeated getPgs errors
+Error repeated 3 times within window: 
+SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '$statusWhere AND latitude IS NOT NULL AND longitude IS NOT NULL
+             ...' at line 4
+Check /Applications/XAMPP/xamppfiles/htdocs/PGConnect/backend/getPgs.log
+
+2026-02-08 11:19:42 ALERT: PGConnect: repeated getPgs errors
+Error repeated 3 times within window: 
+SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '$statusWhere AND latitude IS NOT NULL AND longitude IS NOT NULL
+             ...' at line 4
+Check /Applications/XAMPP/xamppfiles/htdocs/PGConnect/backend/getPgs.log
+
+2026-02-08 12:27:40 ALERT: PGConnect: repeated getPgs errors
+Error repeated 3 times within window: 
+SQLSTATE[HY093]: Invalid parameter number
+Check /Applications/XAMPP/xamppfiles/htdocs/PGConnect/backend/getPgs.log
+
+2026-02-09 07:50:44 ALERT: PGConnect: new booking request
+New booking request logged.
+
+New booking request: booking_id=4, pg_id=1048, user_id=4
+Name: Aleena
+Phone: 
+Message: hi
+
+
+2026-02-12 06:49:29 ALERT: PGConnect: new booking request
+New booking request logged.
+
+New booking request: booking_id=5, pg_id=2031, user_id=4
+Name: Aleena
+Phone: 1234567890
+Move-in date: 2026-02-13
+Visit requested at: 2026-02-12 12:30:00
+Visit note: 
+Message: 
+
+
+2026-02-12 07:36:50 ALERT: PGConnect: new booking request
+New booking request logged.
+
+New booking request: booking_id=6, pg_id=7, user_id=4
+Name: Aleena
+Phone: 123456789
+Move-in date: 2026-02-12
+Message: 
+
+

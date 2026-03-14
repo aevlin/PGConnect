@@ -4,3 +4,34 @@
 #0 /Applications/XAMPP/xamppfiles/htdocs/PGConnect/owner/owner-add-pg.php(94): PDOStatement->execute(Array)
 #1 {main}
 2026-02-08 10:56:20 ERROR: [2] Undefined variable $avgRating in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/user/pg-detail.php:65
+2026-02-08 11:03:05 ERROR: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/user/pg-detail.php:61
+2026-02-08 11:03:14 ERROR: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/user/pg-detail.php:61
+2026-02-08 11:03:26 ERROR: [2] Undefined variable $avgRating in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/user/pg-detail.php:65
+2026-02-08 11:08:41 ERROR: [2] Undefined variable $avgRating in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/user/pg-detail.php:71
+2026-02-08 12:52:49 EXCEPTION: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '\"owner\"' at line 1 in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/owner/chat.php:36
+#0 /Applications/XAMPP/xamppfiles/htdocs/PGConnect/owner/chat.php(36): PDO->prepare('UPDATE messages...')
+#1 {main}
+2026-02-08 12:53:01 EXCEPTION: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '\"owner\"' at line 1 in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/owner/chat.php:36
+#0 /Applications/XAMPP/xamppfiles/htdocs/PGConnect/owner/chat.php(36): PDO->prepare('UPDATE messages...')
+#1 {main}
+2026-02-08 12:53:05 EXCEPTION: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '\"owner\"' at line 1 in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/owner/chat.php:36
+#0 /Applications/XAMPP/xamppfiles/htdocs/PGConnect/owner/chat.php(36): PDO->prepare('UPDATE messages...')
+#1 {main}
+2026-02-08 12:53:06 EXCEPTION: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '\"owner\"' at line 1 in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/owner/chat.php:36
+#0 /Applications/XAMPP/xamppfiles/htdocs/PGConnect/owner/chat.php(36): PDO->prepare('UPDATE messages...')
+#1 {main}
+2026-02-12 06:34:24 ERROR: [2] Cannot modify header information - headers already sent by (output started at /Applications/XAMPP/xamppfiles/htdocs/PGConnect/includes/header.php:59) in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/owner/chat.php:7
+2026-02-12 06:34:28 ERROR: [2] Cannot modify header information - headers already sent by (output started at /Applications/XAMPP/xamppfiles/htdocs/PGConnect/includes/header.php:59) in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/owner/chat.php:7
+2026-02-12 06:34:29 ERROR: [2] Cannot modify header information - headers already sent by (output started at /Applications/XAMPP/xamppfiles/htdocs/PGConnect/includes/header.php:59) in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/owner/chat.php:7
+2026-02-12 06:34:30 ERROR: [2] Cannot modify header information - headers already sent by (output started at /Applications/XAMPP/xamppfiles/htdocs/PGConnect/includes/header.php:59) in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/owner/chat.php:7
+2026-02-12 06:34:40 ERROR: [2] Cannot modify header information - headers already sent by (output started at /Applications/XAMPP/xamppfiles/htdocs/PGConnect/includes/header.php:59) in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/owner/chat.php:7
+2026-02-12 06:50:48 ERROR: [2] Cannot modify header information - headers already sent by (output started at /Applications/XAMPP/xamppfiles/htdocs/PGConnect/includes/header.php:59) in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/user/payment.php:47
+2026-02-12 07:39:14 ERROR: [2] Cannot modify header information - headers already sent by (output started at /Applications/XAMPP/xamppfiles/htdocs/PGConnect/includes/header.php:59) in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/user/payment.php:79
+2026-02-12 09:19:29 ERROR: [2] Cannot modify header information - headers already sent by (output started at /Applications/XAMPP/xamppfiles/htdocs/PGConnect/includes/header.php:62) in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/user/saved-searches.php:29
+2026-02-12 09:46:03 ERROR: [2] Cannot modify header information - headers already sent by (output started at /Applications/XAMPP/xamppfiles/htdocs/PGConnect/includes/header.php:62) in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/user/leave-pg.php:46
+2026-02-17 05:51:23 EXCEPTION: SQLSTATE[HY093]: Invalid parameter number in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/user/pg-listings.php:107
+#0 /Applications/XAMPP/xamppfiles/htdocs/PGConnect/user/pg-listings.php(107): PDOStatement->execute(Array)
+#1 {main}
+2026-02-17 05:51:27 EXCEPTION: SQLSTATE[HY093]: Invalid parameter number in /Applications/XAMPP/xamppfiles/htdocs/PGConnect/user/pg-listings.php:107
+#0 /Applications/XAMPP/xamppfiles/htdocs/PGConnect/user/pg-listings.php(107): PDOStatement->execute(Array)
+#1 {main}

@@ -10,6 +10,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['user_role'] ?? '') !== 'owner') 
 }
 
 $ownerId = (int)($_SESSION['user_id'] ?? 0);
+$q = trim((string)($_GET['q'] ?? ''));
 require_once '../includes/header.php';
 require_once '../backend/user_schema.php';
 ensure_user_profile_schema($pdo);
@@ -29,20 +30,36 @@ $verificationStatus = $vstmt->fetchColumn() ?: 'pending';
             <?php endif; ?>
 
             <!-- Owner PGs -->
+            <form method="GET" class="card border-0 shadow-sm mb-3">
+                <div class="card-body d-flex gap-2 flex-wrap">
+                    <input type="text" name="q" class="form-control" style="max-width:420px;" placeholder="Search your PGs by name, code, city, address" value="<?php echo htmlspecialchars($q); ?>">
+                    <button class="btn btn-primary">Search</button>
+                    <?php if ($q !== ''): ?>
+                      <a href="owner-dashboard.php" class="btn btn-outline-secondary">Clear</a>
+                    <?php endif; ?>
+                </div>
+            </form>
+
             <?php
-                $stmt = $pdo->prepare('SELECT p.id, p.pg_name, p.city, p.address, p.monthly_rent, p.capacity, p.sharing_type, p.status,
-                                                     (SELECT image_path FROM pg_images WHERE pg_id = p.id ORDER BY id LIMIT 1) AS cover_image
-                                                 FROM pg_listings p
-                                                 WHERE owner_id = :oid
-                                                 ORDER BY created_at DESC');
-            $stmt->execute([':oid' => $ownerId]);
+            $sql = 'SELECT p.id, p.pg_name, p.pg_code, p.city, p.address, p.monthly_rent, p.capacity, p.sharing_type, p.status,
+                           (SELECT image_path FROM pg_images WHERE pg_id = p.id ORDER BY id LIMIT 1) AS cover_image
+                    FROM pg_listings p
+                    WHERE owner_id = :oid';
+            $params = [':oid' => $ownerId];
+            if ($q !== '') {
+                $sql .= ' AND (LOWER(p.pg_name) LIKE :q OR LOWER(p.pg_code) LIKE :q OR LOWER(p.city) LIKE :q OR LOWER(p.address) LIKE :q)';
+                $params[':q'] = '%' . strtolower($q) . '%';
+            }
+            $sql .= ' ORDER BY created_at DESC';
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
             $myPgs = $stmt->fetchAll();
             ?>
 
             <div class="row g-3 mb-4">
             <?php if (empty($myPgs)): ?>
                 <div class="col-12">
-                    <div class="alert alert-info">You have not added any PGs yet.</div>
+                    <div class="alert alert-info"><?php echo $q !== '' ? 'No PG matched your search.' : 'You have not added any PGs yet.'; ?></div>
                 </div>
             <?php else: ?>
                 <?php foreach ($myPgs as $pg): ?>
@@ -50,7 +67,7 @@ $verificationStatus = $vstmt->fetchColumn() ?: 'pending';
                     <article class="pg-card h-100 p-0">
                         <?php
                         $img = $pg['cover_image'] ?? '';
-                        $fallback = pg_image_url('uploads/default-pg.jpg');
+                        $fallback = pg_fallback_image((int)$pg['id']);
                         if (empty($img)) {
                             $img = $fallback;
                         } else {
