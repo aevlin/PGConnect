@@ -27,5 +27,11 @@ function ensure_user_profile_schema(PDO $pdo) {
     $add('owner_aadhaar', "VARCHAR(255) DEFAULT NULL");
     $add('owner_permit', "VARCHAR(255) DEFAULT NULL");
     $add('owner_verification_status', "VARCHAR(20) DEFAULT 'pending'");
+    $add('onboarding_completed', "TINYINT(1) DEFAULT 0");
+    $add('pref_city', "VARCHAR(120) DEFAULT NULL");
+    $add('pref_budget', "VARCHAR(50) DEFAULT NULL");
+    $add('move_timeline', "VARCHAR(50) DEFAULT NULL");
+    $add('owner_city', "VARCHAR(120) DEFAULT NULL");
+    $add('owner_listings', "VARCHAR(50) DEFAULT NULL");
+    $add('owner_docs_ready', "VARCHAR(50) DEFAULT NULL");
 }
-

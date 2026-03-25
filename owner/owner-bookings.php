@@ -57,11 +57,19 @@ try {
       <div class="card-body">
         <h2 class="h6 mb-2">Visit Appointments</h2>
         <?php foreach ($visitRows as $vr): ?>
+          <?php $visitStatus = (string)($vr['visit_status'] ?? 'requested'); ?>
           <div class="border rounded p-2 mb-2">
             <div class="fw-semibold"><?php echo htmlspecialchars($vr['pg_name']); ?> - <?php echo htmlspecialchars($vr['requester_name']); ?></div>
             <div class="small text-muted">Preferred: <?php echo htmlspecialchars($vr['visit_datetime'] ?: 'Not set'); ?></div>
+            <div class="small mt-1">
+              <span class="badge bg-light text-dark border">Visit <?php echo htmlspecialchars($visitStatus); ?></span>
+            </div>
             <div class="d-flex gap-2 mt-2 flex-wrap">
-              <a href="owner-booking-action.php?id=<?php echo (int)$vr['id']; ?>&action=visit_accept" class="btn btn-sm btn-success">Accept visit</a>
+              <?php if ($visitStatus !== 'accepted'): ?>
+                <a href="owner-booking-action.php?id=<?php echo (int)$vr['id']; ?>&action=visit_accept" class="btn btn-sm btn-success">Accept visit</a>
+              <?php else: ?>
+                <span class="btn btn-sm btn-success disabled">Visit accepted</span>
+              <?php endif; ?>
               <a href="owner-booking-action.php?id=<?php echo (int)$vr['id']; ?>&action=visit_cancel" class="btn btn-sm btn-outline-danger">Cancel visit</a>
               <form action="owner-booking-action.php" method="POST" class="d-flex gap-2">
                 <input type="hidden" name="id" value="<?php echo (int)$vr['id']; ?>">
@@ -88,9 +96,17 @@ try {
               <div class="small text-muted">Requested by <?php echo htmlspecialchars($b['requester_name']); ?> (<?php echo htmlspecialchars($b['requester_email']); ?>) on <?php echo htmlspecialchars($b['created_at']); ?></div>
               <div class="small text-muted">Move-in date: <?php echo htmlspecialchars($b['move_in_date'] ?: '-'); ?><?php if (!empty($b['contact_phone'])): ?> · Phone: <?php echo htmlspecialchars($b['contact_phone']); ?><?php endif; ?></div>
               <?php if (!empty($b['visit_requested'])): ?>
-                <div class="small text-primary">Visit appointment requested: <?php echo htmlspecialchars($b['visit_datetime'] ?: 'Time not set'); ?><?php if (!empty($b['visit_note'])): ?> · <?php echo htmlspecialchars($b['visit_note']); ?><?php endif; ?></div>
+                <div class="small text-primary">
+                  Visit appointment <?php echo htmlspecialchars((string)($b['visit_status'] ?? 'requested')); ?>:
+                  <?php echo htmlspecialchars($b['visit_datetime'] ?: 'Time not set'); ?>
+                  <?php if (!empty($b['visit_note'])): ?> · <?php echo htmlspecialchars($b['visit_note']); ?><?php endif; ?>
+                </div>
                 <div class="mt-2 d-flex gap-2 flex-wrap">
-                  <a href="owner-booking-action.php?id=<?php echo (int)$b['id']; ?>&action=visit_accept" class="btn btn-sm btn-outline-success">Accept visit</a>
+                  <?php if (($b['visit_status'] ?? 'requested') !== 'accepted'): ?>
+                    <a href="owner-booking-action.php?id=<?php echo (int)$b['id']; ?>&action=visit_accept" class="btn btn-sm btn-outline-success">Accept visit</a>
+                  <?php else: ?>
+                    <span class="badge bg-success">Visit accepted</span>
+                  <?php endif; ?>
                   <a href="owner-booking-action.php?id=<?php echo (int)$b['id']; ?>&action=visit_cancel" class="btn btn-sm btn-outline-danger">Cancel visit</a>
                 </div>
               <?php endif; ?>
@@ -108,8 +124,10 @@ try {
                   <span class="badge bg-warning text-dark">User agreed, awaiting payment</span>
                 <?php elseif ($b['status'] === 'paid'): ?>
                   <span class="badge bg-primary">Payment completed</span>
+                <?php elseif ($b['status'] === 'left'): ?>
+                  <span class="badge bg-light text-dark border">Guest has moved out</span>
                 <?php else: ?>
-                  <span class="badge bg-secondary">No action</span>
+                  <span class="badge bg-light text-dark border">Monitoring only</span>
                 <?php endif; ?>
               </div>
             </div>

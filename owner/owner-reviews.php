@@ -4,7 +4,6 @@ require_role('owner');
 require_once '../backend/connect.php';
 require_once '../backend/reviews_schema.php';
 ensure_reviews_schema($pdo);
-require_once '../includes/header.php';
 
 $ownerId = (int)$_SESSION['user_id'];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -20,6 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Location: owner-reviews.php');
     exit;
 }
+
+require_once '../includes/header.php';
 
 $stmt = $pdo->prepare("SELECT r.*, p.pg_name, u.name AS user_name
                        FROM reviews r
@@ -59,4 +60,3 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <?php endif; ?>
 </div>
 <?php require_once '../includes/footer.php'; ?>
-

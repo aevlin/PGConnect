@@ -4,7 +4,6 @@ require_role('owner');
 require_once '../backend/connect.php';
 require_once '../backend/feature_schema.php';
 ensure_feature_schema($pdo);
-require_once '../includes/header.php';
 
 $ownerId = (int)$_SESSION['user_id'];
 $pgId = isset($_GET['pg_id']) ? (int)$_GET['pg_id'] : (int)($_POST['pg_id'] ?? 0);
@@ -36,6 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Location: owner-availability.php?pg_id=' . $pgId);
     exit;
 }
+
+require_once '../includes/header.php';
 
 $rows = [];
 $s = $pdo->prepare('SELECT * FROM availability_blocks WHERE pg_id = ? ORDER BY block_date ASC');
@@ -99,4 +100,3 @@ $rows = $s->fetchAll(PDO::FETCH_ASSOC);
   </div>
 </div>
 <?php require_once '../includes/footer.php'; ?>
-

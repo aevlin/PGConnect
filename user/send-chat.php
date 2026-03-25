@@ -19,8 +19,13 @@ $c = $pdo->prepare('SELECT id FROM conversations WHERE id = ? AND user_id = ? LI
 $c->execute([$convId, $userId]);
 if (!$c->fetchColumn()) { header('Location: chat.php'); exit; }
 
-$m = $pdo->prepare('INSERT INTO messages (conversation_id, sender_id, sender_role, recipient_role, message, is_read) VALUES (?, ?, ?, ?, ?, 0)');
-$m->execute([$convId, $userId, 'user', 'owner', $message]);
+chat_insert_message($pdo, [
+    'conversation_id' => $convId,
+    'sender_id' => $userId,
+    'sender_role' => 'user',
+    'recipient_role' => 'owner',
+    'message' => $message,
+]);
 try {
     $ow = $pdo->prepare('SELECT owner_id FROM conversations WHERE id = ? LIMIT 1');
     $ow->execute([$convId]);

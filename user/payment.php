@@ -6,7 +6,6 @@ require_once '../backend/notify.php';
 require_once '../backend/audit.php';
 require_once '../backend/auth.php';
 require_role('user');
-require_once '../includes/header.php';
 
 ensure_bookings_schema($pdo);
 ensure_system_schema($pdo);
@@ -24,6 +23,9 @@ if (!$booking) {
 }
 
 $alert = '';
+$paymentSuccess = false;
+$paymentSuccessMessage = '';
+$paymentRefValue = '';
 if (!isset($_SESSION['payment_otp']) || !isset($_SESSION['payment_otp_booking']) || (int)$_SESSION['payment_otp_booking'] !== (int)$bookingId) {
     $_SESSION['payment_otp'] = (string)random_int(100000, 999999);
     $_SESSION['payment_otp_booking'] = (int)$bookingId;
@@ -56,6 +58,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             unset($_SESSION['payment_otp'], $_SESSION['payment_otp_booking']);
             $_SESSION['payment_success_message'] = 'Payment successful. Welcome to your new PG at ' . ($booking['pg_name'] ?? 'PG') . '.';
             $_SESSION['payment_success_booking_id'] = (int)$bookingId;
+            $paymentSuccess = true;
+            $paymentSuccessMessage = $_SESSION['payment_success_message'];
+            $paymentRefValue = $paymentRef;
 
             // notify owner + admins
             try {
@@ -73,19 +78,97 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             audit_log($pdo, 'payment_success', 'booking', (int)$bookingId, 'ref=' . $paymentRef);
 
             @file_put_contents(__DIR__ . '/../backend/booking_notifications.log', date('Y-m-d H:i:s') . " PAYMENT_SUCCESS: booking_id={$bookingId} ref={$paymentRef}\n", FILE_APPEND);
-            header('Location: user-profile.php');
-            exit;
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) $pdo->rollBack();
             $alert = '<div class="alert alert-danger">Payment failed. Please try again.</div>';
         }
     }
 }
+
+require_once '../includes/header.php';
 ?>
 
 <div class="container py-5">
   <div class="row justify-content-center">
     <div class="col-lg-6">
+      <?php if ($paymentSuccess): ?>
+      <style>
+        .payment-success-shell {
+          position: relative;
+          overflow: hidden;
+          border-radius: 24px;
+          background: linear-gradient(135deg, #ecfdf5 0%, #eff6ff 100%);
+          border: 1px solid #bfdbfe;
+          box-shadow: 0 22px 60px rgba(15, 23, 42, 0.12);
+        }
+        .payment-success-glow {
+          position: absolute;
+          inset: -30% auto auto -10%;
+          width: 260px;
+          height: 260px;
+          background: radial-gradient(circle, rgba(34,197,94,0.26) 0%, rgba(34,197,94,0) 70%);
+          pointer-events: none;
+        }
+        .payment-check {
+          width: 90px;
+          height: 90px;
+          border-radius: 999px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, #22c55e, #2563eb);
+          color: #fff;
+          font-size: 2rem;
+          box-shadow: 0 18px 36px rgba(37,99,235,.24);
+          animation: paymentPop .65s ease-out both;
+        }
+        .payment-progress {
+          height: 8px;
+          border-radius: 999px;
+          background: #dbeafe;
+          overflow: hidden;
+        }
+        .payment-progress > span {
+          display: block;
+          height: 100%;
+          width: 100%;
+          background: linear-gradient(90deg, #22c55e, #2563eb);
+          transform-origin: left center;
+          animation: paymentCountdown 3.2s linear forwards;
+        }
+        @keyframes paymentPop {
+          0% { transform: scale(.55); opacity: 0; }
+          70% { transform: scale(1.08); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes paymentCountdown {
+          from { transform: scaleX(1); }
+          to { transform: scaleX(0); }
+        }
+      </style>
+      <div class="card border-0 payment-success-shell">
+        <div class="payment-success-glow"></div>
+        <div class="card-body p-5 text-center position-relative">
+          <div class="payment-check mb-4"><i class="fa-solid fa-check"></i></div>
+          <h1 class="h3 mb-2">Payment successful</h1>
+          <p class="text-muted mb-3"><?php echo htmlspecialchars($paymentSuccessMessage); ?></p>
+          <div class="small text-muted mb-1">Booking #<?php echo (int)$booking['id']; ?> · Ref <?php echo htmlspecialchars($paymentRefValue); ?></div>
+          <div class="small text-muted mb-4">Redirecting to your bookings in a moment...</div>
+          <div class="payment-progress mb-4"><span></span></div>
+          <div class="d-flex justify-content-center gap-2 flex-wrap">
+            <a class="btn btn-primary" href="booking-request.php">Open bookings</a>
+            <a class="btn btn-outline-secondary" href="receipt.php?booking_id=<?php echo (int)$booking['id']; ?>">View receipt</a>
+          </div>
+        </div>
+      </div>
+      <script>
+      (function(){
+        setTimeout(function(){
+          window.location.href = 'booking-request.php';
+        }, 3200);
+      })();
+      </script>
+      <?php else: ?>
       <div class="card border-0 shadow-sm">
         <div class="card-body p-4">
           <h1 class="h4 mb-1">Complete payment</h1>
@@ -131,6 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </form>
         </div>
       </div>
+      <?php endif; ?>
     </div>
   </div>
 </div>

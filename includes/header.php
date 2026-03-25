@@ -65,7 +65,8 @@ function pg_fallback_image($pgId) {
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <style>
     /* YOUR EXACT CSS FROM index.html - ALL styles */
-    body { background: #f5f5f7; color: #0f172a; font-family: system-ui,-apple-system,"Segoe UI",sans-serif; }
+    :root { --app-nav-offset: 92px; }
+    body { background: #f5f5f7; color: #0f172a; font-family: system-ui,-apple-system,"Segoe UI",sans-serif; padding-top: var(--app-nav-offset); }
     .navbar { background-color: rgba(255,255,255,0.9); backdrop-filter: blur(16px); box-shadow: 0 8px 24px rgba(15,23,42,0.04); }
     .navbar-brand span { font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
     .hero-wrap { position: relative; padding-top: 5.5rem; padding-bottom: 3.5rem; overflow: hidden; }
@@ -85,7 +86,7 @@ function pg_fallback_image($pgId) {
     .form-control:focus, .form-select:focus { background-color: #ffffff; border-color: #2563eb; box-shadow: 0 0 0 .15rem rgba(37,99,235,.35); color:#111827; }
     .btn-gradient { background: linear-gradient(120deg,#22c55e,#2563eb); border: none; color: #fff; box-shadow: 0 14px 30px rgba(37,99,235,.35); }
     .hero-metrics span strong { display:block; font-size:.95rem; }
-    .section-shell { margin-top: 5.5rem; padding-top: 2.5rem; padding-bottom: 3rem; background: #ffffff; border-radius: 2.4rem 2.4rem 0 0; box-shadow: 0 -6px 24px rgba(15,23,42,0.06); }
+    .section-shell { margin-top: .75rem; padding-top: 2.5rem; padding-bottom: 3rem; background: #ffffff; border-radius: 2.4rem 2.4rem 0 0; box-shadow: 0 -6px 24px rgba(15,23,42,0.06); }
     .pg-card { background: #ffffff; border-radius: 1.3rem; overflow: hidden; border: 1px solid #e5e7eb; box-shadow: 0 14px 30px rgba(15,23,42,.08); transition: all 0.3s ease; }
     .pg-card:hover { transform: translateY(-8px); box-shadow: 0 24px 48px rgba(15,23,42,.15); }
     .pg-card img { object-fit: cover; height: 190px; }
@@ -102,7 +103,7 @@ function pg_fallback_image($pgId) {
     .tag { font-size: .7rem; border-radius: 999px; padding: .2rem .6rem; background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; }
     #pg-map { height: 260px; border-radius: 1.4rem; overflow: hidden; border: 1px solid #e5e7eb; box-shadow: 0 14px 30px rgba(15,23,42,.08); }
     footer { font-size: .8rem; color: #6b7280; background: #ffffff; border-top: 1px solid #e5e7eb; }
-    @media (max-width: 991.98px) { .hero-wrap { padding-bottom: 5.3rem; } .search-card { position: static; transform:none; margin-top:1.4rem; } .hero-photo img { height: 320px; } .hero-subtitle { max-width: 100%; } }
+    @media (max-width: 991.98px) { :root { --app-nav-offset: 84px; } .hero-wrap { padding-bottom: 5.3rem; } .search-card { position: static; transform:none; margin-top:1.4rem; } .hero-photo img { height: 320px; } .hero-subtitle { max-width: 100%; } }
   </style>
 </head>
 <body>
@@ -193,6 +194,8 @@ function pg_fallback_image($pgId) {
             <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><?php echo htmlspecialchars($_SESSION['user_name'] ?? 'User'); ?></a>
             <ul class="dropdown-menu">
               <?php if($_SESSION['user_role'] == 'owner'): ?>
+                <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/owner/owner-add-pg.php">Add New PG</a></li>
+                <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/owner/bulk-upload.php">Bulk Upload PGs</a></li>
                 <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/owner/owner-dashboard.php">Owner Dashboard</a></li>
                 <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/owner/tickets.php">Service Tickets</a></li>
                 <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/owner/owner-reviews.php">PG Reviews</a></li>

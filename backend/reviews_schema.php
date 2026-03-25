@@ -10,6 +10,8 @@ function ensure_reviews_schema(PDO $pdo) {
         rating INT NOT NULL,
         comment TEXT DEFAULT NULL,
         owner_response TEXT DEFAULT NULL,
+        edit_count INT DEFAULT 0,
+        updated_at DATETIME DEFAULT NULL,
         is_hidden TINYINT(1) DEFAULT 0,
         moderated_by INT DEFAULT NULL,
         moderated_at DATETIME DEFAULT NULL,
@@ -21,6 +23,8 @@ function ensure_reviews_schema(PDO $pdo) {
     $cols = $pdo->query("SHOW COLUMNS FROM reviews")->fetchAll(PDO::FETCH_COLUMN);
     $cols = array_map('strtolower', $cols);
     if (!in_array('owner_response', $cols, true)) $pdo->exec("ALTER TABLE reviews ADD COLUMN owner_response TEXT DEFAULT NULL");
+    if (!in_array('edit_count', $cols, true)) $pdo->exec("ALTER TABLE reviews ADD COLUMN edit_count INT DEFAULT 0");
+    if (!in_array('updated_at', $cols, true)) $pdo->exec("ALTER TABLE reviews ADD COLUMN updated_at DATETIME DEFAULT NULL");
     if (!in_array('is_hidden', $cols, true)) $pdo->exec("ALTER TABLE reviews ADD COLUMN is_hidden TINYINT(1) DEFAULT 0");
     if (!in_array('moderated_by', $cols, true)) $pdo->exec("ALTER TABLE reviews ADD COLUMN moderated_by INT DEFAULT NULL");
     if (!in_array('moderated_at', $cols, true)) $pdo->exec("ALTER TABLE reviews ADD COLUMN moderated_at DATETIME DEFAULT NULL");

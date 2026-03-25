@@ -4,7 +4,6 @@ require_role('user');
 require_once '../backend/connect.php';
 require_once '../backend/feature_schema.php';
 ensure_feature_schema($pdo);
-require_once '../includes/header.php';
 
 $userId = (int)$_SESSION['user_id'];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -33,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $rows = $pdo->prepare('SELECT * FROM saved_searches WHERE user_id = ? ORDER BY created_at DESC');
 $rows->execute([$userId]);
 $items = $rows->fetchAll(PDO::FETCH_ASSOC);
+require_once '../includes/header.php';
 ?>
 <div class="container py-4">
   <h1 class="h5 mb-3">Saved Search Alerts</h1>
@@ -94,4 +94,3 @@ $items = $rows->fetchAll(PDO::FETCH_ASSOC);
   </div>
 </div>
 <?php require_once '../includes/footer.php'; ?>
-

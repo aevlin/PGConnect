@@ -11,7 +11,6 @@ require_role('user');
 ensure_bookings_schema($pdo);
 ensure_reviews_schema($pdo);
 ensure_system_schema($pdo);
-require_once '../includes/header.php';
 
 $bookingId = isset($_GET['booking_id']) ? (int)$_GET['booking_id'] : (int)($_POST['booking_id'] ?? 0);
 if ($bookingId <= 0) {
@@ -51,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+require_once '../includes/header.php';
 ?>
 <div class="container py-5">
   <div class="row justify-content-center">

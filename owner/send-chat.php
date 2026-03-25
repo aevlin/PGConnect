@@ -17,17 +17,28 @@ $message = trim($_POST['message'] ?? '');
 if (!$convId || $message === '') { header('Location: chat.php'); exit; }
 
 // verify conversation belongs to owner
-$c = $pdo->prepare('SELECT id FROM conversations WHERE id = ? AND owner_id = ? LIMIT 1');
+$c = $pdo->prepare("SELECT id, user_id, admin_id, COALESCE(conversation_type, 'tenant_owner') AS conversation_type FROM conversations WHERE id = ? AND owner_id = ? LIMIT 1");
 $c->execute([$convId, $ownerId]);
-if (!$c->fetchColumn()) { header('Location: chat.php'); exit; }
+$conv = $c->fetch(PDO::FETCH_ASSOC);
+if (!$conv) { header('Location: chat.php'); exit; }
 
-$m = $pdo->prepare('INSERT INTO messages (conversation_id, sender_id, sender_role, recipient_role, message, is_read) VALUES (?, ?, ?, ?, ?, 0)');
-$m->execute([$convId, $ownerId, 'owner', 'user', $message]);
+$recipientRole = (($conv['conversation_type'] ?? 'tenant_owner') === 'admin_owner') ? 'admin' : 'user';
+
+chat_insert_message($pdo, [
+    'conversation_id' => $convId,
+    'sender_id' => $ownerId,
+    'sender_role' => 'owner',
+    'recipient_role' => $recipientRole,
+    'message' => $message,
+]);
 try {
-    $us = $pdo->prepare('SELECT user_id FROM conversations WHERE id = ? LIMIT 1');
-    $us->execute([$convId]);
-    $userId = (int)$us->fetchColumn();
-    if ($userId > 0) notify_user($pdo, $userId, 'user', 'New chat reply', 'Owner replied in your PG chat.', '/PGConnect/user/chat.php?c=' . $convId);
+    if ($recipientRole === 'user') {
+        $userId = (int)($conv['user_id'] ?? 0);
+        if ($userId > 0) notify_user($pdo, $userId, 'user', 'New chat reply', 'Owner replied in your PG chat.', '/PGConnect/user/chat.php?c=' . $convId);
+    } else {
+        $adminId = (int)($conv['admin_id'] ?? 0);
+        if ($adminId > 0) notify_user($pdo, $adminId, 'admin', 'Owner replied', 'Owner replied in admin chat.', '/PGConnect/admin/chat.php?c=' . $convId);
+    }
     audit_log($pdo, 'chat_message_sent', 'conversation', (int)$convId, 'sender=owner');
 } catch (Throwable $e) {}
 

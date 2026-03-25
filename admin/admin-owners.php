@@ -12,11 +12,27 @@ require_once '../backend/user_schema.php';
 
 ensure_user_profile_schema($pdo);
 
+$q = trim((string)($_GET['q'] ?? ''));
+$statusFilter = trim((string)($_GET['status'] ?? ''));
+
 $owners = [];
 $queryError = '';
 try {
-    $stmt = $pdo->query("SELECT id, name, email, phone, address, dob, profile_photo, owner_aadhaar, owner_permit, owner_verification_status
-                         FROM users WHERE role = 'owner' ORDER BY id DESC");
+    $sql = "SELECT id, name, email, phone, address, dob, profile_photo, owner_aadhaar, owner_permit, owner_verification_status
+            FROM users
+            WHERE role = 'owner'";
+    $params = [];
+    if ($q !== '') {
+        $sql .= " AND (LOWER(name) LIKE :q OR LOWER(email) LIKE :q OR LOWER(phone) LIKE :q)";
+        $params['q'] = '%' . strtolower($q) . '%';
+    }
+    if (in_array($statusFilter, ['pending', 'verified', 'rejected'], true)) {
+        $sql .= " AND COALESCE(owner_verification_status, 'pending') = :status";
+        $params['status'] = $statusFilter;
+    }
+    $sql .= " ORDER BY id DESC";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
     $owners = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (Throwable $e) {
     $queryError = (defined('DEV_MODE') && DEV_MODE) ? $e->getMessage() : 'Failed to load owners.';
@@ -35,6 +51,28 @@ try {
   <?php if ($queryError): ?>
     <div class="alert alert-danger"><?php echo htmlspecialchars($queryError); ?></div>
   <?php endif; ?>
+
+  <form method="GET" class="card border-0 shadow-sm mb-3">
+    <div class="card-body row g-2 align-items-end">
+      <div class="col-md-6">
+        <label class="form-label small text-muted mb-1">Search owners</label>
+        <input type="text" class="form-control" name="q" value="<?php echo htmlspecialchars($q); ?>" placeholder="Name, email, or phone">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small text-muted mb-1">Verification</label>
+        <select class="form-select" name="status">
+          <option value="">All statuses</option>
+          <option value="pending" <?php echo $statusFilter === 'pending' ? 'selected' : ''; ?>>Pending</option>
+          <option value="verified" <?php echo $statusFilter === 'verified' ? 'selected' : ''; ?>>Verified</option>
+          <option value="rejected" <?php echo $statusFilter === 'rejected' ? 'selected' : ''; ?>>Rejected</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-flex gap-2">
+        <button class="btn btn-primary w-100">Filter</button>
+        <a href="admin-owners.php" class="btn btn-outline-secondary">Clear</a>
+      </div>
+    </div>
+  </form>
 
   <?php if (empty($owners)): ?>
     <div class="alert alert-info">No owner accounts found.</div>

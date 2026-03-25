@@ -1,0 +1,4 @@
+pg_code,pg_name,district,state,location_area,city,address,monthly_rent,capacity,available_beds,occupancy_type,occupancy_status,sharing_type,latitude,longitude,amenities
+CHN001,Sunrise Residency PG,Chennai,Tamil Nadu,Velachery,Chennai,"12, Taramani Link Road, Velachery",7800,24,8,co-ed,available,double,12.978400,80.220900,"WiFi|Meals|Laundry|CCTV"
+PUN001,City Square PG,Pune,Maharashtra,Hinjawadi,Pune,"Phase 1, Near Rajiv Gandhi Infotech Park",9200,18,5,boys,filling_fast,single,18.591300,73.738900,"WiFi|Power Backup|Parking"
+DEL001,North Campus Stay,North Delhi,Delhi,Kamla Nagar,Delhi,"Bungalow Road, Near Delhi University North Campus",10500,16,3,girls,available,double,28.680900,77.205800,"WiFi|Meals|RO Water|CCTV"

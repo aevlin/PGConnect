@@ -514,9 +514,9 @@ if ($isTenant) {
     }).then(r => r.json()).then(j => {
       const el = document.getElementById('reviewAlert');
       if (j && j.ok) {
-        el.innerText = 'Review submitted. Refresh to see it.';
+        el.innerText = j.message || 'Review saved. Refresh to see it.';
       } else {
-        el.innerText = 'Failed to submit review.';
+        el.innerText = (j && j.message) ? j.message : 'Failed to submit review.';
       }
     }).catch(()=> {
       const el = document.getElementById('reviewAlert');

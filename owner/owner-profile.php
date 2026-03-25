@@ -1,7 +1,7 @@
 <?php
-require_once '../includes/header.php';
 require_once '../backend/connect.php';
 require_once '../backend/user_schema.php';
+require_once '../backend/upload_helpers.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
 if (!isset($_SESSION['user_id']) || ($_SESSION['user_role'] ?? '') !== 'owner') {
     header('Location: ../backend/login.php'); exit;
@@ -27,47 +27,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $photoPath = $u['profile_photo'] ?? null;
         if (!empty($_FILES['profile_photo']['name'])) {
-            $uploadDir = __DIR__ . '/../uploads/profiles/';
-            if (!is_dir($uploadDir)) @mkdir($uploadDir, 0755, true);
-            $ext = strtolower(pathinfo($_FILES['profile_photo']['name'], PATHINFO_EXTENSION));
-            $fname = 'owner_' . $userId . '_photo_' . time() . '.' . $ext;
-            $target = $uploadDir . $fname;
-            if (move_uploaded_file($_FILES['profile_photo']['tmp_name'], $target)) {
+            $uploadDir = __DIR__ . '/../uploads/profiles';
+            $uploadError = '';
+            $fname = pg_store_upload($_FILES['profile_photo'], $uploadDir, 'owner_' . $userId . '_photo', ['jpg','jpeg','png','webp'], ['image/'], 4 * 1024 * 1024, $uploadError);
+            if ($fname !== null) {
                 $photoPath = 'uploads/profiles/' . $fname;
+            } else {
+                $error = $uploadError ?: 'Invalid profile photo upload.';
             }
         }
 
         $aadhaarPath = $u['owner_aadhaar'] ?? null;
-        if (!empty($_FILES['owner_aadhaar']['name'])) {
-            $uploadDir = __DIR__ . '/../uploads/docs/';
-            if (!is_dir($uploadDir)) @mkdir($uploadDir, 0755, true);
-            $ext = strtolower(pathinfo($_FILES['owner_aadhaar']['name'], PATHINFO_EXTENSION));
-            $fname = 'owner_' . $userId . '_aadhaar_' . time() . '.' . $ext;
-            $target = $uploadDir . $fname;
-            if (move_uploaded_file($_FILES['owner_aadhaar']['tmp_name'], $target)) {
+        if ($error === '' && !empty($_FILES['owner_aadhaar']['name'])) {
+            $uploadDir = __DIR__ . '/../uploads/docs';
+            $uploadError = '';
+            $fname = pg_store_upload($_FILES['owner_aadhaar'], $uploadDir, 'owner_' . $userId . '_aadhaar', ['jpg','jpeg','png','pdf'], ['image/','application/pdf'], 6 * 1024 * 1024, $uploadError);
+            if ($fname !== null) {
                 $aadhaarPath = 'uploads/docs/' . $fname;
+            } else {
+                $error = $uploadError ?: 'Invalid Aadhaar upload.';
             }
         }
 
         $permitPath = $u['owner_permit'] ?? null;
-        if (!empty($_FILES['owner_permit']['name'])) {
-            $uploadDir = __DIR__ . '/../uploads/docs/';
-            if (!is_dir($uploadDir)) @mkdir($uploadDir, 0755, true);
-            $ext = strtolower(pathinfo($_FILES['owner_permit']['name'], PATHINFO_EXTENSION));
-            $fname = 'owner_' . $userId . '_permit_' . time() . '.' . $ext;
-            $target = $uploadDir . $fname;
-            if (move_uploaded_file($_FILES['owner_permit']['tmp_name'], $target)) {
+        if ($error === '' && !empty($_FILES['owner_permit']['name'])) {
+            $uploadDir = __DIR__ . '/../uploads/docs';
+            $uploadError = '';
+            $fname = pg_store_upload($_FILES['owner_permit'], $uploadDir, 'owner_' . $userId . '_permit', ['jpg','jpeg','png','pdf'], ['image/','application/pdf'], 6 * 1024 * 1024, $uploadError);
+            if ($fname !== null) {
                 $permitPath = 'uploads/docs/' . $fname;
+            } else {
+                $error = $uploadError ?: 'Invalid permit upload.';
             }
         }
-
-        $upd = $pdo->prepare('UPDATE users SET name = ?, phone = ?, address = ?, dob = ?, profile_photo = ?, owner_aadhaar = ?, owner_permit = ?, owner_verification_status = ? WHERE id = ?');
-        $upd->execute([$name, $phone, $address, $dob ?: null, $photoPath, $aadhaarPath, $permitPath, 'pending', $userId]);
-        $success = 'Profile updated. Verification pending.';
-        $u['name'] = $name; $u['phone'] = $phone; $u['address'] = $address; $u['dob'] = $dob; $u['profile_photo'] = $photoPath; $u['owner_aadhaar'] = $aadhaarPath; $u['owner_permit'] = $permitPath; $u['owner_verification_status'] = 'pending';
-        $_SESSION['user_name'] = $name;
+        if ($error === '') {
+            $upd = $pdo->prepare('UPDATE users SET name = ?, phone = ?, address = ?, dob = ?, profile_photo = ?, owner_aadhaar = ?, owner_permit = ?, owner_verification_status = ? WHERE id = ?');
+            $upd->execute([$name, $phone, $address, $dob ?: null, $photoPath, $aadhaarPath, $permitPath, 'pending', $userId]);
+            $success = 'Profile updated. Verification pending.';
+            $u['name'] = $name; $u['phone'] = $phone; $u['address'] = $address; $u['dob'] = $dob; $u['profile_photo'] = $photoPath; $u['owner_aadhaar'] = $aadhaarPath; $u['owner_permit'] = $permitPath; $u['owner_verification_status'] = 'pending';
+            $_SESSION['user_name'] = $name;
+        }
     }
 }
+require_once '../includes/header.php';
 ?>
 
 <section class="section-shell">

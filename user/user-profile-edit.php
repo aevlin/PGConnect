@@ -1,7 +1,7 @@
 <?php
-require_once '../includes/header.php';
 require_once '../backend/connect.php';
 require_once '../backend/user_schema.php';
+require_once '../backend/upload_helpers.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
 if (!isset($_SESSION['user_id']) || ($_SESSION['user_role'] ?? '') !== 'user') {
     header('Location: ../backend/login.php'); exit;
@@ -27,22 +27,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $photoPath = $u['profile_photo'] ?? null;
         if (!empty($_FILES['profile_photo']['name'])) {
-            $uploadDir = __DIR__ . '/../uploads/profiles/';
-            if (!is_dir($uploadDir)) @mkdir($uploadDir, 0755, true);
-            $ext = strtolower(pathinfo($_FILES['profile_photo']['name'], PATHINFO_EXTENSION));
-            $fname = 'user_' . $userId . '_' . time() . '.' . $ext;
-            $target = $uploadDir . $fname;
-            if (move_uploaded_file($_FILES['profile_photo']['tmp_name'], $target)) {
+            $uploadDir = __DIR__ . '/../uploads/profiles';
+            $uploadError = '';
+            $fname = pg_store_upload($_FILES['profile_photo'], $uploadDir, 'user_' . $userId . '_photo', ['jpg','jpeg','png','webp'], ['image/'], 4 * 1024 * 1024, $uploadError);
+            if ($fname !== null) {
                 $photoPath = 'uploads/profiles/' . $fname;
+            } else {
+                $error = $uploadError ?: 'Invalid profile photo upload.';
             }
         }
-        $upd = $pdo->prepare('UPDATE users SET name = ?, phone = ?, address = ?, dob = ?, profile_photo = ? WHERE id = ?');
-        $upd->execute([$name, $phone, $address, $dob ?: null, $photoPath, $userId]);
-        $success = 'Profile updated';
-        $u['name'] = $name; $u['phone'] = $phone; $u['address'] = $address; $u['dob'] = $dob; $u['profile_photo'] = $photoPath;
-        $_SESSION['user_name'] = $name;
+        if ($error === '') {
+            $upd = $pdo->prepare('UPDATE users SET name = ?, phone = ?, address = ?, dob = ?, profile_photo = ? WHERE id = ?');
+            $upd->execute([$name, $phone, $address, $dob ?: null, $photoPath, $userId]);
+            $success = 'Profile updated';
+            $u['name'] = $name; $u['phone'] = $phone; $u['address'] = $address; $u['dob'] = $dob; $u['profile_photo'] = $photoPath;
+            $_SESSION['user_name'] = $name;
+        }
     }
 }
+require_once '../includes/header.php';
 ?>
 
 <section class="section-shell">

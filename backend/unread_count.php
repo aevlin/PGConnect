@@ -42,10 +42,13 @@ try {
         $stmt = $pdo->prepare('
             SELECT COUNT(*)
             FROM messages m
-            WHERE m.sender_role IN ("user","owner")
+            JOIN conversations c ON c.id = m.conversation_id
+            WHERE c.admin_id = ?
+              AND COALESCE(c.conversation_type, "tenant_owner") = "admin_owner"
+              AND m.sender_role = "owner"
               AND COALESCE(m.is_read_admin, 0) = 0
         ');
-        $stmt->execute();
+        $stmt->execute([$_SESSION['user_id']]);
         $count = (int)$stmt->fetchColumn();
     }
     echo json_encode(['ok' => true, 'count' => $count]);

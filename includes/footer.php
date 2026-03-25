@@ -11,6 +11,19 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+	function syncNavbarOffset() {
+		const navbar = document.querySelector('.navbar');
+		if (!navbar) return;
+		const h = Math.ceil(navbar.getBoundingClientRect().height || 0);
+		if (h > 0) {
+			document.documentElement.style.setProperty('--app-nav-offset', (h + 12) + 'px');
+		}
+	}
+
+	document.addEventListener('DOMContentLoaded', syncNavbarOffset);
+	window.addEventListener('load', syncNavbarOffset);
+	window.addEventListener('resize', syncNavbarOffset);
+
 	// Smooth scrolling for anchor links
 	document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 		anchor.addEventListener('click', function (e) {
@@ -27,6 +40,13 @@
 		navbar.style.background = window.scrollY > 50
 			? 'rgba(255,255,255,0.95)'
 			: 'rgba(255,255,255,0.9)';
+	});
+
+	document.addEventListener('shown.bs.collapse', function (e) {
+		if (e.target && e.target.id === 'mainNav') syncNavbarOffset();
+	});
+	document.addEventListener('hidden.bs.collapse', function (e) {
+		if (e.target && e.target.id === 'mainNav') syncNavbarOffset();
 	});
 </script>
 

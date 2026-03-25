@@ -1,5 +1,4 @@
 <?php
-require_once '../includes/header.php';
 require_once '../backend/connect.php';
 require_once '../backend/favorites_schema.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
@@ -23,6 +22,7 @@ try {
 } catch (Throwable $e) {
     $queryError = (defined('DEV_MODE') && DEV_MODE) ? $e->getMessage() : 'Failed to load saved PGs.';
 }
+require_once '../includes/header.php';
 ?>
 
 <div class="container py-5">

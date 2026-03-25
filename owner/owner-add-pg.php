@@ -2,6 +2,7 @@
 $page_title = "Add New PG";
 require_once '../backend/connect.php';
 require_once '../backend/config.php';
+require_once '../backend/upload_helpers.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
 if (!defined('BASE_URL')) define('BASE_URL', '/PGConnect');
 
@@ -172,7 +173,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Process uploaded images (optional)
       $imageErrors = [];
       if (!empty($_FILES['images']) && is_array($_FILES['images']['name'])) {
-        $allowed = ['jpg','jpeg','png','gif'];
+        $allowed = ['jpg','jpeg','png','gif','webp'];
         $maxFiles = 5;
         $maxSize = 5 * 1024 * 1024; // 5MB
         $count = count(array_filter($_FILES['images']['name']));
@@ -193,18 +194,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $imageErrors[] = "$name: upload error code $err";
             continue;
           }
-          if ($size > $maxSize) {
-            $imageErrors[] = "$name: exceeds max size of 5MB";
-            continue;
-          }
           $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-          if (!in_array($ext, $allowed)) {
-            $imageErrors[] = "$name: invalid file type";
+          $singleFile = [
+            'name' => $name,
+            'tmp_name' => $tmp,
+            'error' => $err,
+            'size' => $size,
+          ];
+          $uploadError = '';
+          if (!pg_validate_upload($singleFile, $allowed, ['image/'], $maxSize, $uploadError)) {
+            $imageErrors[] = "$name: " . $uploadError;
             continue;
           }
 
           // Generate unique filename
-          $safeName = preg_replace('/[^A-Za-z0-9_\-\.]/', '_', pathinfo($name, PATHINFO_FILENAME));
           $filename = sprintf('pg_%s_%s.%s', $pg_id, uniqid(), $ext);
           $target = $uploadDir . $filename;
 
@@ -400,6 +403,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                   <small class="text-muted">Click map below to auto-fill</small>
                 </div>
                 <div class="col-12">
+                  <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <button type="button" class="btn btn-outline-primary" id="useCurrentPgLocation">
+                      <i class="fas fa-location-crosshairs me-2"></i>Use current location
+                    </button>
+                    <span class="small text-muted" id="locationFetchStatus">Allow location access to fill the exact PG coordinates.</span>
+                  </div>
+                </div>
+                <div class="col-12">
                   <label class="form-label fw-semibold mb-2">Pick Location on Map</label>
                   <div id="ownerLocationMap" style="height:280px;border:1px solid #d1d5db;border-radius:14px;overflow:hidden;"></div>
                   <small class="text-muted">Tip: Click on the exact PG position, or drag the marker.</small>
@@ -462,6 +473,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   const latInput = document.getElementById('pgLatitude');
   const lngInput = document.getElementById('pgLongitude');
   const mapEl = document.getElementById('ownerLocationMap');
+  const currentBtn = document.getElementById('useCurrentPgLocation');
+  const locationStatus = document.getElementById('locationFetchStatus');
   if (!latInput || !lngInput || !mapEl || typeof L === 'undefined') return;
 
   let lat = parseFloat(latInput.value);
@@ -486,6 +499,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     latInput.value = Number(newLat).toFixed(6);
     lngInput.value = Number(newLng).toFixed(6);
     marker.setLatLng([newLat, newLng]);
+    map.setView([newLat, newLng], Math.max(map.getZoom(), 16));
   }
 
   map.on('click', function(e){
@@ -507,6 +521,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   latInput.addEventListener('change', syncFromInputs);
   lngInput.addEventListener('change', syncFromInputs);
+
+  if (currentBtn) {
+    currentBtn.addEventListener('click', function () {
+      if (!navigator.geolocation) {
+        if (locationStatus) locationStatus.textContent = 'Current location is not supported in this browser.';
+        return;
+      }
+      currentBtn.disabled = true;
+      if (locationStatus) locationStatus.textContent = 'Fetching your current location...';
+      navigator.geolocation.getCurrentPosition(function (position) {
+        const currentLat = position.coords.latitude;
+        const currentLng = position.coords.longitude;
+        setLatLng(currentLat, currentLng);
+        if (locationStatus) locationStatus.textContent = 'Current location added. You can still adjust it on the map.';
+        currentBtn.disabled = false;
+      }, function (error) {
+        const message = (error && error.code === 1)
+          ? 'Location permission was denied. Please allow it and try again.'
+          : 'Could not fetch your current location. Please try again or click the map manually.';
+        if (locationStatus) locationStatus.textContent = message;
+        currentBtn.disabled = false;
+      }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+    });
+  }
 
   setTimeout(() => map.invalidateSize(), 200);
 })();

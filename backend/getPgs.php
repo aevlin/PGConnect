@@ -50,8 +50,8 @@ try {
                        latitude, longitude,
                        (SELECT image_path FROM pg_images WHERE pg_id = pg_listings.id ORDER BY id LIMIT 1) AS cover_image,
                        (6371 * acos(
-                           cos(radians(:lat)) * cos(radians(latitude)) * cos(radians(longitude) - radians(:lng)) +
-                           sin(radians(:lat)) * sin(radians(latitude))
+                           cos(radians(:lat_a)) * cos(radians(latitude)) * cos(radians(longitude) - radians(:lng_a)) +
+                           sin(radians(:lat_b)) * sin(radians(latitude))
                        )) AS distance
                 FROM pg_listings
                 WHERE status $statusWhere
@@ -64,7 +64,12 @@ try {
                 LIMIT 500";
 
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([':lat' => $lat, ':lng' => $lng, ':radius' => $radius]);
+        $stmt->execute([
+            ':lat_a' => $lat,
+            ':lat_b' => $lat,
+            ':lng_a' => $lng,
+            ':radius' => $radius
+        ]);
         $pgs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         if (empty($pgs)) {
@@ -74,8 +79,8 @@ try {
                                    latitude, longitude,
                                    (SELECT image_path FROM pg_images WHERE pg_id = pg_listings.id ORDER BY id LIMIT 1) AS cover_image,
                                    (6371 * acos(
-                                       cos(radians(:lat)) * cos(radians(latitude)) * cos(radians(longitude) - radians(:lng)) +
-                                       sin(radians(:lat)) * sin(radians(latitude))
+                                       cos(radians(:lat_a)) * cos(radians(latitude)) * cos(radians(longitude) - radians(:lng_a)) +
+                                       sin(radians(:lat_b)) * sin(radians(latitude))
                                    )) AS distance
                             FROM pg_listings
                             WHERE status $statusWhere
@@ -86,7 +91,11 @@ try {
                             ORDER BY distance ASC
                             LIMIT 25";
             $fstmt = $pdo->prepare($fallbackSql);
-            $fstmt->execute([':lat' => $lat, ':lng' => $lng]);
+            $fstmt->execute([
+                ':lat_a' => $lat,
+                ':lat_b' => $lat,
+                ':lng_a' => $lng
+            ]);
             $pgs = $fstmt->fetchAll(PDO::FETCH_ASSOC);
         }
     } else {

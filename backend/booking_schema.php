@@ -12,6 +12,7 @@ function ensure_bookings_schema(PDO $pdo) {
         contact_phone VARCHAR(50) DEFAULT NULL,
         move_in_date DATE DEFAULT NULL,
         visit_requested TINYINT(1) DEFAULT 0,
+        visit_status VARCHAR(20) DEFAULT NULL,
         visit_datetime DATETIME DEFAULT NULL,
         visit_note VARCHAR(255) DEFAULT NULL,
         message TEXT DEFAULT NULL,
@@ -43,6 +44,7 @@ function ensure_bookings_schema(PDO $pdo) {
     $add('contact_phone', "VARCHAR(50) DEFAULT NULL");
     $add('move_in_date', "DATE DEFAULT NULL");
     $add('visit_requested', "TINYINT(1) DEFAULT 0");
+    $add('visit_status', "VARCHAR(20) DEFAULT NULL");
     $add('visit_datetime', "DATETIME DEFAULT NULL");
     $add('visit_note', "VARCHAR(255) DEFAULT NULL");
     $add('message', "TEXT DEFAULT NULL");

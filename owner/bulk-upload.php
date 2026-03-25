@@ -35,7 +35,7 @@ require_once '../includes/header.php';
                 <input type="file" name="csvfile" accept=".csv" class="form-control" required>
               </div>
               <div class="mb-3">
-                <small class="text-muted">Required columns (header row): <code>pg_name,city,address,monthly_rent,capacity,sharing_type,latitude,longitude</code></small>
+                <small class="text-muted">Required columns (header row): <code>pg_code, pg_name, district, state, location_area, city, address, monthly_rent, capacity, available_beds, occupancy_type, occupancy_status, sharing_type, latitude, longitude, amenities</code></small>
               </div>
               <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-gradient">Upload and Import</button>
@@ -50,7 +50,8 @@ require_once '../includes/header.php';
           <div class="card-body small text-muted">
             <strong>Notes:</strong>
             <ul>
-              <li>Maximum rows: 1000. Invalid rows are skipped and reported.</li>
+              <li>Maximum rows: 2000. Invalid rows are skipped and reported.</li>
+              <li>Valid occupancy types: <code>boys</code>, <code>girls</code>, <code>co-ed</code>. Valid occupancy statuses: <code>available</code>, <code>filling_fast</code>, <code>full</code>.</li>
               <li>Sharing type must be one of: single, double, triple.</li>
               <li>Listings are created with status <code>pending</code> and require admin approval.</li>
             </ul>

@@ -23,10 +23,24 @@ if ($pgId <= 0 || $rating < 1 || $rating > 5) {
 
 try {
     ensure_reviews_schema($pdo);
-    $stmt = $pdo->prepare('INSERT INTO reviews (user_id, pg_id, rating, comment) VALUES (?, ?, ?, ?)');
-    $stmt->execute([$userId, $pgId, $rating, $comment]);
-    echo json_encode(['ok' => true]);
+    $existingStmt = $pdo->prepare('SELECT id, COALESCE(edit_count, 0) AS edit_count FROM reviews WHERE user_id = ? AND pg_id = ? ORDER BY id DESC LIMIT 1');
+    $existingStmt->execute([$userId, $pgId]);
+    $existing = $existingStmt->fetch(PDO::FETCH_ASSOC);
+    if ($existing) {
+        if ((int)$existing['edit_count'] >= 1) {
+            http_response_code(400);
+            echo json_encode(['ok' => false, 'error' => 'review_edit_limit', 'message' => 'You already edited this review once.']);
+            exit;
+        }
+        $stmt = $pdo->prepare('UPDATE reviews SET rating = ?, comment = ?, edit_count = edit_count + 1, updated_at = NOW() WHERE id = ?');
+        $stmt->execute([$rating, $comment, (int)$existing['id']]);
+        echo json_encode(['ok' => true, 'message' => 'Review updated successfully.']);
+    } else {
+        $stmt = $pdo->prepare('INSERT INTO reviews (user_id, pg_id, rating, comment) VALUES (?, ?, ?, ?)');
+        $stmt->execute([$userId, $pgId, $rating, $comment]);
+        echo json_encode(['ok' => true, 'message' => 'Review submitted successfully.']);
+    }
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['ok' => false, 'error' => 'server_error']);
+    echo json_encode(['ok' => false, 'error' => 'server_error', 'message' => 'Unable to save review right now.']);
 }

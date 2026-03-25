@@ -5,7 +5,6 @@ require_once '../backend/booking_schema.php';
 
 require_role('user');
 ensure_bookings_schema($pdo);
-require_once '../includes/header.php';
 
 $bookingId = isset($_GET['booking_id']) ? (int)$_GET['booking_id'] : 0;
 if ($bookingId <= 0) {
@@ -22,6 +21,7 @@ $r = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$r) {
     header('Location: booking-request.php'); exit;
 }
+require_once '../includes/header.php';
 ?>
 <div class="container py-5">
   <div class="card border-0 shadow-sm">

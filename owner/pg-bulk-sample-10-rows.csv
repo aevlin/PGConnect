@@ -1,0 +1,11 @@
+pg_code,pg_name,district,state,location_area,city,address,monthly_rent,capacity,available_beds,occupancy_type,occupancy_status,sharing_type,latitude,longitude,amenities
+BLR101,Metro Hive PG,Bengaluru Urban,Karnataka,Koramangala,Bengaluru,"80 Feet Road, Koramangala 4th Block",9500,30,9,co-ed,available,single,12.935200,77.624500,"WiFi|Meals|Gym|CCTV"
+BLR102,Oak Leaf PG,Bengaluru Urban,Karnataka,Marathahalli,Bengaluru,"Outer Ring Road, Marathahalli",7200,22,4,boys,filling_fast,double,12.959100,77.697400,"WiFi|Laundry|Power Backup"
+BLR103,HerSpace PG,Bengaluru Urban,Karnataka,Whitefield,Bengaluru,"ECC Road, Whitefield",8800,20,6,girls,available,double,12.969800,77.749900,"WiFi|Meals|Housekeeping"
+HYD101,Pearl Comfort PG,Hyderabad,Telangana,Gachibowli,Hyderabad,"DLF Street, Gachibowli",8300,26,7,co-ed,available,triple,17.440100,78.348900,"WiFi|Meals|Parking"
+HYD102,Elite Rooms PG,Hyderabad,Telangana,Madhapur,Hyderabad,"Ayyappa Society Main Road, Madhapur",9900,18,1,boys,filling_fast,single,17.448500,78.391500,"WiFi|AC|Laundry|CCTV"
+PUN101,Riverfront PG,Pune,Maharashtra,Viman Nagar,Pune,"Datta Mandir Chowk, Viman Nagar",7600,21,5,co-ed,available,double,18.567900,73.914300,"WiFi|Meals|RO Water"
+MUM101,Harbor View PG,Mumbai Suburban,Maharashtra,Powai,Mumbai,"Near Hiranandani Gardens, Powai",12500,14,2,girls,full,single,19.118700,72.905600,"WiFi|Meals|Security"
+CHN101,Marina Stay PG,Chennai,Tamil Nadu,Thoraipakkam,Chennai,"OMR Service Road, Thoraipakkam",6900,28,10,boys,available,triple,12.938000,80.236200,"WiFi|Laundry|Parking"
+KOC101,Backwater Homes PG,Ernakulam,Kerala,Kakkanad,Kochi,"InfoPark Expressway, Kakkanad",6400,19,6,co-ed,available,double,10.015900,76.341900,"WiFi|Meals|Power Backup"
+DEL101,Capital Living PG,South West Delhi,Delhi,Dwarka,Delhi,"Sector 12, Dwarka",9800,17,3,co-ed,filling_fast,single,28.592100,77.046000,"WiFi|Meals|CCTV|Parking"

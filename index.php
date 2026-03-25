@@ -206,6 +206,34 @@ try {
       border: 1px solid #e5e7eb;
       box-shadow: 0 14px 30px rgba(15,23,42,.08);
     }
+    .owner-earn-icon-wrap {
+      width: 128px;
+      height: 128px;
+      margin: 0 auto;
+      border-radius: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #eff6ff, #ecfeff);
+      border: 1px solid #dbeafe;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 12px 28px rgba(37,99,235,.08);
+      position: relative;
+    }
+    .owner-earn-icon-wrap .fa-house {
+      font-size: 3.15rem;
+      color: #111827;
+    }
+    .owner-earn-icon-wrap .fa-suitcase-rolling {
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      font-size: 1.45rem;
+      color: #2563eb;
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 10px;
+      box-shadow: 0 10px 24px rgba(37,99,235,.16);
+    }
     footer {
       font-size: .8rem;
       color: #6b7280;
@@ -246,6 +274,8 @@ try {
             <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><?php echo htmlspecialchars($_SESSION['user_name'] ?? 'User'); ?></a>
             <ul class="dropdown-menu dropdown-menu-end">
               <?php if (($_SESSION['user_role'] ?? '') === 'owner'): ?>
+                <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/owner/owner-add-pg.php">Add New PG</a></li>
+                <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/owner/bulk-upload.php">Bulk Upload PGs</a></li>
                 <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/owner/owner-dashboard.php">Owner Dashboard</a></li>
               <?php elseif (($_SESSION['user_role'] ?? '') === 'admin'): ?>
                 <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/admin/admin-dashboard.php">Admin Panel</a></li>
@@ -444,8 +474,11 @@ try {
       <div class="col-lg-6">
         <div class="card border-0 shadow-sm p-3">
           <div class="row g-3">
-            <div class="col-4">
-              <img src="uploads/default-pg.jpg" class="img-fluid rounded" alt="owner">
+            <div class="col-4 d-flex align-items-center justify-content-center">
+              <div class="owner-earn-icon-wrap" aria-hidden="true">
+                <i class="fa-solid fa-house"></i>
+                <i class="fa-solid fa-suitcase-rolling"></i>
+              </div>
             </div>
             <div class="col-8">
               <h5 class="mb-1">Start earning from day one</h5>

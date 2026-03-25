@@ -112,3 +112,35 @@ Move-in date: 2026-02-12
 Message: 
 
 
+2026-03-17 15:24:38 ALERT: PGConnect: new booking request
+New booking request logged.
+
+New booking request: booking_id=7, pg_id=1794, user_id=3
+Name: Tejas
+Phone: 123456789
+Move-in date: 2026-03-17
+Message: 
+
+
+2026-03-18 16:16:40 ALERT: PGConnect: new booking request
+New booking request logged.
+
+New booking request: booking_id=9, pg_id=2032, user_id=4
+Name: Aleena
+Phone: 
+Move-in date: 2026-03-18
+Message: 
+
+
+2026-03-23 04:47:19 ALERT: PGConnect: new booking request
+New booking request logged.
+
+New booking request: booking_id=11, pg_id=2033, user_id=4
+Name: Aleena
+Phone: 123456789
+Move-in date: 2026-03-24
+Visit requested at: 2026-03-23 09:17:00
+Visit note: 
+Message: 
+
+

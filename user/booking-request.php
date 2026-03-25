@@ -93,7 +93,11 @@ try {
               <div class="small text-muted">Owner: <?php echo htmlspecialchars($b['owner_name']); ?></div>
               <div class="small text-muted">Move-in date: <?php echo htmlspecialchars($b['move_in_date'] ?: '-'); ?></div>
               <?php if (!empty($b['visit_requested'])): ?>
-                <div class="small text-primary">Visit requested: <?php echo htmlspecialchars($b['visit_datetime'] ?: 'Time not set'); ?><?php if (!empty($b['visit_note'])): ?> · <?php echo htmlspecialchars($b['visit_note']); ?><?php endif; ?></div>
+                <div class="small text-primary">
+                  Visit appointment <?php echo htmlspecialchars((string)($b['visit_status'] ?? 'requested')); ?>:
+                  <?php echo htmlspecialchars($b['visit_datetime'] ?: 'Time not set'); ?>
+                  <?php if (!empty($b['visit_note'])): ?> · <?php echo htmlspecialchars($b['visit_note']); ?><?php endif; ?>
+                </div>
               <?php endif; ?>
             </div>
             <div class="text-end">
@@ -133,7 +137,7 @@ try {
                 <?php elseif ($b['status'] === 'requested'): ?>
                   <a class="btn btn-sm btn-outline-danger" href="user-booking-action.php?id=<?php echo (int)$b['id']; ?>&action=cancel">Cancel</a>
                 <?php else: ?>
-                  <span class="badge bg-secondary">No action</span>
+                  <span class="badge bg-light text-dark border">Waiting for the next update</span>
                 <?php endif; ?>
               </div>
             </div>

@@ -5,7 +5,6 @@ require_once '../backend/connect.php';
 require_once '../backend/feature_schema.php';
 require_once '../backend/notify.php';
 ensure_feature_schema($pdo);
-require_once '../includes/header.php';
 
 $ownerId = (int)$_SESSION['user_id'];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -23,6 +22,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Location: tickets.php');
     exit;
 }
+
+require_once '../includes/header.php';
 
 $stmt = $pdo->prepare('SELECT t.*, p.pg_name, u.name as user_name FROM service_tickets t JOIN pg_listings p ON p.id=t.pg_id JOIN users u ON u.id=t.user_id WHERE t.owner_id = ? ORDER BY t.updated_at DESC');
 $stmt->execute([$ownerId]);
@@ -66,4 +67,3 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <?php endif; ?>
 </div>
 <?php require_once '../includes/footer.php'; ?>
-

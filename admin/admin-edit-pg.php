@@ -6,7 +6,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
   exit;
 }
 
-require_once '../includes/header.php';
 require_once '../backend/connect.php';
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
@@ -69,6 +68,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $imgStmt->execute([$id]);
   $images = $imgStmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+require_once '../includes/header.php';
 ?>
 
 <div class="container py-4">

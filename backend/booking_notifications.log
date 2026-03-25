@@ -39,3 +39,39 @@ Message:
 2026-02-12 07:37:37 OWNER_ACTION: Your booking request (id=6) has been owner_approved.
 2026-02-12 07:38:02 USER_ACTION: booking_id=6 status=payment_pending
 2026-02-12 07:39:14 PAYMENT_SUCCESS: booking_id=6 ref=PGP-D69FCF5949
+2026-03-17 15:24:37 USER_REQUEST: New booking request: booking_id=7, pg_id=1794, user_id=3
+Name: Tejas
+Phone: 123456789
+Move-in date: 2026-03-17
+Message: 
+
+2026-03-17 15:37:23 OWNER_ACTION: Your booking request (id=7) has been owner_approved.
+2026-03-17 15:37:37 USER_ACTION: booking_id=7 status=payment_pending
+2026-03-17 15:38:03 PAYMENT_SUCCESS: booking_id=7 ref=PGP-FC5E2D739C
+2026-03-17 16:19:04 USER_ACTION: booking_id=8 status=payment_pending
+2026-03-17 16:19:24 PAYMENT_SUCCESS: booking_id=8 ref=PGP-A9EE175F83
+2026-03-18 16:16:39 USER_REQUEST: New booking request: booking_id=9, pg_id=2032, user_id=4
+Name: Aleena
+Phone: 
+Move-in date: 2026-03-18
+Message: 
+
+2026-03-18 16:16:55 OWNER_ACTION: Your booking request (id=9) has been owner_approved.
+2026-03-18 16:18:22 USER_ACTION: booking_id=9 status=payment_pending
+2026-03-18 16:18:47 PAYMENT_SUCCESS: booking_id=9 ref=PGP-EB66B799D4
+2026-03-19 06:00:19 USER_ACTION: booking_id=10 status=payment_pending
+2026-03-19 06:00:45 PAYMENT_SUCCESS: booking_id=10 ref=PGP-6AF33F8B63
+2026-03-19 06:00:59 USER_ACTION: booking_id=9 status=left
+2026-03-23 04:47:18 USER_REQUEST: New booking request: booking_id=11, pg_id=2033, user_id=4
+Name: Aleena
+Phone: 123456789
+Move-in date: 2026-03-24
+Visit requested at: 2026-03-23 09:17:00
+Visit note: 
+Message: 
+
+2026-03-23 04:48:08 OWNER_ACTION: Your booking request (id=11) has been owner_approved.
+2026-03-23 04:49:37 USER_ACTION: booking_id=10 status=left
+2026-03-23 04:50:00 USER_ACTION: booking_id=11 status=payment_pending
+2026-03-23 10:11:47 USER_ACTION: booking_id=12 status=payment_pending
+2026-03-23 10:12:08 PAYMENT_SUCCESS: booking_id=12 ref=PGP-A936097A49

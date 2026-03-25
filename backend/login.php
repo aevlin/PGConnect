@@ -10,12 +10,19 @@ if (session_status() === PHP_SESSION_NONE) {
 if (!defined('BASE_URL')) define('BASE_URL', '/PGConnect');
 
 require_once 'connect.php'; // PDO connection
+require_once 'user_schema.php';
 
 $error = '';
+ensure_user_profile_schema($pdo);
 
 // Log helper
 function backend_log($msg) {
     @file_put_contents(__DIR__ . '/login.log', date('Y-m-d H:i:s') . " " . $msg . "\n", FILE_APPEND);
+}
+
+function owner_can_skip_onboarding(array $user): bool {
+    return (($user['role'] ?? '') === 'owner')
+        && strtolower((string)($user['owner_verification_status'] ?? '')) === 'approved';
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -31,6 +38,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $stmt->fetch();
 
         if ($user && password_verify($password, $user['password'])) {
+            if (owner_can_skip_onboarding($user) && (int)($user['onboarding_completed'] ?? 0) !== 1) {
+                try {
+                    $mark = $pdo->prepare('UPDATE users SET onboarding_completed = 1 WHERE id = ?');
+                    $mark->execute([(int)$user['id']]);
+                    $user['onboarding_completed'] = 1;
+                } catch (Throwable $e) {
+                    backend_log('ONBOARDING_SKIP_MARK_ERROR: ' . $e->getMessage());
+                }
+            }
+
             // SET ALL SESSION DATA
             // regenerate session id on successful login
             session_regenerate_id(true);
@@ -39,13 +56,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_name'] = $user['name'];
             $_SESSION['user_email'] = $user['email'];
 
+            if (($user['role'] ?? '') !== 'admin' && (int)($user['onboarding_completed'] ?? 0) !== 1) {
+                header('Location: ' . BASE_URL . '/backend/onboarding.php');
+                exit;
+            }
+
             // ROLE-BASED REDIRECTS (use absolute path to avoid relative path mistakes)
             if ($user['role'] === 'owner') {
                 header('Location: ' . BASE_URL . '/owner/owner-dashboard.php');
             } elseif ($user['role'] === 'admin') {
                 header('Location: ' . BASE_URL . '/admin/admin-dashboard.php');
             } else {
-                header('Location: ' . BASE_URL . '/user/pg-listings.php');
+                header('Location: ' . BASE_URL . '/user/user-profile.php');
             }
             exit;
         } else {
@@ -56,19 +78,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $newHash = password_hash($password, PASSWORD_DEFAULT);
                     $upd = $pdo->prepare('UPDATE users SET password = ? WHERE id = ?');
                     $upd->execute([$newHash, $user['id']]);
+                    if (owner_can_skip_onboarding($user) && (int)($user['onboarding_completed'] ?? 0) !== 1) {
+                        $mark = $pdo->prepare('UPDATE users SET onboarding_completed = 1 WHERE id = ?');
+                        $mark->execute([(int)$user['id']]);
+                        $user['onboarding_completed'] = 1;
+                    }
                     // set session
                     session_regenerate_id(true);
                     $_SESSION['user_id'] = $user['id'];
                     $_SESSION['user_role'] = $user['role'];
                     $_SESSION['user_name'] = $user['name'];
                     $_SESSION['user_email'] = $user['email'];
+                    if (($user['role'] ?? '') !== 'admin' && (int)($user['onboarding_completed'] ?? 0) !== 1) {
+                        header('Location: ' . BASE_URL . '/backend/onboarding.php');
+                        exit;
+                    }
                     // redirect
                     if ($user['role'] === 'owner') {
                         header('Location: ' . BASE_URL . '/owner/owner-dashboard.php');
                     } elseif ($user['role'] === 'admin') {
                         header('Location: ' . BASE_URL . '/admin/admin-dashboard.php');
                     } else {
-                        header('Location: ' . BASE_URL . '/user/pg-listings.php');
+                        header('Location: ' . BASE_URL . '/user/user-profile.php');
                     }
                     exit;
                 } catch (Exception $e) {

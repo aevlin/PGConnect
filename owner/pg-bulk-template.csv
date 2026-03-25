@@ -1,4 +1,4 @@
-pg_name,city,address,monthly_rent,capacity,sharing_type,latitude,longitude
-Green Nest PG,Bengaluru,HSR Layout Sector 2,8500,20,single,12.911000,77.641000
-Lakeview PG,Hyderabad,Near Jubilee Hills,7000,15,double,17.385044,78.486671
-Seaside PG,Kochi,Kadavanthra,6000,12,triple,9.9667,76.2890
+pg_code,pg_name,district,state,location_area,city,address,monthly_rent,capacity,available_beds,occupancy_type,occupancy_status,sharing_type,latitude,longitude,amenities
+BLR001,Green Nest PG,Bengaluru Urban,Karnataka,HSR Layout,Bengaluru,"27, 14th Main, HSR Layout Sector 2",8500,20,6,co-ed,available,single,12.911000,77.641000,"WiFi|Meals|Laundry|CCTV"
+HYD001,Lakeview PG,Hyderabad,Telangana,Jubilee Hills,Hyderabad,"Road No. 36, Near Jubilee Hills Check Post",7000,15,4,boys,filling_fast,double,17.432000,78.407000,"WiFi|Parking|Power Backup"
+KOC001,Seaside PG,Ernakulam,Kerala,Kadavanthra,Kochi,"KP Vallon Road, Kadavanthra",6000,12,2,girls,available,triple,9.966700,76.289000,"WiFi|Meals|Housekeeping"

@@ -115,8 +115,9 @@ try {
     }
 
     // Insert booking
-    $ins = $pdo->prepare('INSERT INTO bookings (user_id, pg_id, contact_name, contact_phone, move_in_date, visit_requested, visit_datetime, visit_note, message, payment_amount, payment_status, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-    $ins->execute([$userId, $pgId, $contact_name, $contact_phone, $moveInDate, $visitRequested, $visitDatetime, $visitNote, $message, $paymentAmount, 'unpaid', 'requested']);
+    $visitStatus = $visitRequested ? 'requested' : null;
+    $ins = $pdo->prepare('INSERT INTO bookings (user_id, pg_id, contact_name, contact_phone, move_in_date, visit_requested, visit_status, visit_datetime, visit_note, message, payment_amount, payment_status, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    $ins->execute([$userId, $pgId, $contact_name, $contact_phone, $moveInDate, $visitRequested, $visitStatus, $visitDatetime, $visitNote, $message, $paymentAmount, 'unpaid', 'requested']);
     $bookingId = $pdo->lastInsertId();
 
     // Notify owner: find owner email

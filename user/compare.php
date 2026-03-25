@@ -1,8 +1,8 @@
 <?php
-require_once '../includes/header.php';
 require_once '../backend/connect.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
 if (!isset($_SESSION['user_id'])) { header('Location: ../backend/login.php'); exit; }
+require_once '../includes/header.php';
 
 $ids = $_SESSION['compare_pgs'] ?? [];
 $rows = [];

@@ -9,14 +9,34 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
 require_once '../includes/header.php';
 require_once '../backend/connect.php';
 
+$q = trim((string)($_GET['q'] ?? ''));
+$statusFilter = trim((string)($_GET['status'] ?? ''));
+$ownerFilter = trim((string)($_GET['owner'] ?? ''));
+
 $pgs = [];
 $queryError = '';
 try {
-    $stmt = $pdo->query("SELECT p.id, p.pg_name, p.city, p.address AS location, p.monthly_rent AS rent, p.status, p.occupancy_status, u.name AS owner_name,
-           (SELECT image_path FROM pg_images WHERE pg_id = p.id ORDER BY id LIMIT 1) AS cover_image
-         FROM pg_listings p
-         JOIN users u ON p.owner_id = u.id
-         ORDER BY p.created_at DESC");
+    $sql = "SELECT p.id, p.pg_name, p.city, p.address AS location, p.monthly_rent AS rent, p.status, p.occupancy_status, u.name AS owner_name,
+                   (SELECT image_path FROM pg_images WHERE pg_id = p.id ORDER BY id LIMIT 1) AS cover_image
+            FROM pg_listings p
+            JOIN users u ON p.owner_id = u.id
+            WHERE 1=1";
+    $params = [];
+    if ($q !== '') {
+        $sql .= " AND (LOWER(p.pg_name) LIKE :q OR LOWER(p.city) LIKE :q OR LOWER(p.address) LIKE :q OR LOWER(p.pg_code) LIKE :q)";
+        $params['q'] = '%' . strtolower($q) . '%';
+    }
+    if ($ownerFilter !== '') {
+        $sql .= " AND LOWER(u.name) LIKE :owner";
+        $params['owner'] = '%' . strtolower($ownerFilter) . '%';
+    }
+    if (in_array($statusFilter, ['approved', 'pending', 'paused'], true)) {
+        $sql .= " AND p.status = :status";
+        $params['status'] = $statusFilter;
+    }
+    $sql .= " ORDER BY p.created_at DESC";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
     $pgs = $stmt->fetchAll();
 } catch (Throwable $e) {
     // log and don't let the global handler render the friendly page; instead show an inline alert
@@ -26,15 +46,6 @@ try {
     $queryError = (defined('DEV_MODE') && DEV_MODE) ? $e->getMessage() : 'Database error while fetching listings.';
 }
 ?>
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>All PGs – Admin</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
 <div class="container py-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h5 mb-0">All PG listings</h1>
@@ -44,6 +55,32 @@ try {
   <?php if ($queryError): ?>
     <div class="alert alert-danger"><?php echo htmlspecialchars($queryError); ?></div>
   <?php endif; ?>
+
+  <form method="GET" class="card border-0 shadow-sm mb-3">
+    <div class="card-body row g-2 align-items-end">
+      <div class="col-md-5">
+        <label class="form-label small text-muted mb-1">Search PGs</label>
+        <input type="text" class="form-control" name="q" value="<?php echo htmlspecialchars($q); ?>" placeholder="PG name, city, code, address">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small text-muted mb-1">Owner</label>
+        <input type="text" class="form-control" name="owner" value="<?php echo htmlspecialchars($ownerFilter); ?>" placeholder="Owner name">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small text-muted mb-1">Status</label>
+        <select class="form-select" name="status">
+          <option value="">All</option>
+          <option value="approved" <?php echo $statusFilter === 'approved' ? 'selected' : ''; ?>>Approved</option>
+          <option value="pending" <?php echo $statusFilter === 'pending' ? 'selected' : ''; ?>>Pending</option>
+          <option value="paused" <?php echo $statusFilter === 'paused' ? 'selected' : ''; ?>>Paused</option>
+        </select>
+      </div>
+      <div class="col-md-2 d-flex gap-2">
+        <button class="btn btn-primary w-100">Filter</button>
+        <a href="admin-all-pgs.php" class="btn btn-outline-secondary">Clear</a>
+      </div>
+    </div>
+  </form>
 
   <form id="adminBulkForm" method="POST" action="admin-bulk-approve.php">
   <table class="table table-sm align-middle bg-white shadow-sm">

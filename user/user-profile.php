@@ -12,8 +12,10 @@ $userName = $_SESSION['user_name'] ?? 'User';
 require_once '../includes/header.php';
 require_once '../backend/connect.php';
 require_once '../backend/booking_schema.php';
+require_once '../backend/messages_schema.php';
 
 ensure_bookings_schema($pdo);
+ensure_chat_schema($pdo);
 
 $userId = (int)$_SESSION['user_id'];
 $paymentSuccessMessage = $_SESSION['payment_success_message'] ?? '';
@@ -24,6 +26,8 @@ $savedCount = $requestCount = $confirmedCount = $livingCount = 0;
  $recentBookings = [];
  $pendingApprovals = [];
  $currentStays = [];
+ $recentChats = [];
+ $pendingActions = [];
 try {
   $savedCount = (int)$pdo->query("SELECT COUNT(*) FROM favorites WHERE user_id = {$userId}")->fetchColumn();
 } catch (Throwable $e) { $savedCount = 0; }
@@ -46,6 +50,28 @@ try {
   $cs->execute([$userId]);
   $currentStays = $cs->fetchAll(PDO::FETCH_ASSOC);
 } catch (Throwable $e) { $requestCount = 0; $confirmedCount = 0; $livingCount = 0; }
+
+try {
+  $chatStmt = $pdo->prepare("SELECT c.id, c.pg_id, p.pg_name, MAX(m.created_at) AS last_message_at,
+                                    SUM(CASE WHEN m.sender_role = 'owner' AND COALESCE(m.is_read,0) = 0 THEN 1 ELSE 0 END) AS unread_count
+                             FROM conversations c
+                             JOIN messages m ON m.conversation_id = c.id
+                             LEFT JOIN pg_listings p ON p.id = c.pg_id
+                             WHERE c.user_id = ?
+                             GROUP BY c.id, c.pg_id, p.pg_name
+                             ORDER BY last_message_at DESC
+                             LIMIT 5");
+  $chatStmt->execute([$userId]);
+  $recentChats = $chatStmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Throwable $e) {
+  $recentChats = [];
+}
+
+foreach ($recentBookings as $booking) {
+  if (in_array($booking['status'] ?? '', ['owner_approved', 'payment_pending', 'paid'], true)) {
+    $pendingActions[] = $booking;
+  }
+}
 ?>
 
 <section class="section-shell">
@@ -128,7 +154,7 @@ try {
     <?php endif; ?>
 
     <div class="row g-3">
-      <div class="col-lg-6">
+      <div class="col-lg-4">
         <div class="pg-card p-3 h-100">
           <div class="d-flex justify-content-between align-items-center mb-2">
             <h2 class="h6 mb-0">Recent booking requests</h2>
@@ -151,13 +177,60 @@ try {
           <?php endif; ?>
         </div>
       </div>
-      <div class="col-lg-6">
+      <div class="col-lg-4">
         <div class="pg-card p-3 h-100">
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <h2 class="h6 mb-0">Your saved PGs</h2>
-            <a href="saved-pgs.php" class="small text-primary">View all →</a>
+            <h2 class="h6 mb-0">Pending actions</h2>
+            <a href="booking-request.php" class="small text-primary">Open →</a>
           </div>
-          <p class="text-muted small mb-0">Save PGs while browsing to compare and decide later.</p>
+          <?php if (empty($pendingActions)): ?>
+            <p class="text-muted small mb-0">Nothing urgent right now.</p>
+          <?php else: ?>
+            <ul class="list-unstyled mb-0">
+              <?php foreach (array_slice($pendingActions, 0, 5) as $action): ?>
+                <li class="border-bottom py-2">
+                  <div class="fw-semibold"><?php echo htmlspecialchars($action['pg_name']); ?></div>
+                  <div class="small text-muted">
+                    <?php if (($action['status'] ?? '') === 'owner_approved'): ?>
+                      Owner approved. Confirm and pay to secure the room.
+                    <?php elseif (($action['status'] ?? '') === 'payment_pending'): ?>
+                      Payment is pending for this booking.
+                    <?php else: ?>
+                      Active stay or confirmation available.
+                    <?php endif; ?>
+                  </div>
+                </li>
+              <?php endforeach; ?>
+            </ul>
+          <?php endif; ?>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="pg-card p-3 h-100">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="h6 mb-0">Recent chats</h2>
+            <a href="chat.php" class="small text-primary">Open chat →</a>
+          </div>
+          <?php if (empty($recentChats)): ?>
+            <p class="text-muted small mb-0">No active conversations yet.</p>
+          <?php else: ?>
+            <ul class="list-unstyled mb-0">
+              <?php foreach ($recentChats as $chat): ?>
+                <li class="d-flex justify-content-between align-items-center border-bottom py-2">
+                  <div>
+                    <div class="fw-semibold"><?php echo htmlspecialchars($chat['pg_name'] ?: 'PG conversation'); ?></div>
+                    <div class="small text-muted"><?php echo htmlspecialchars($chat['last_message_at'] ?? ''); ?></div>
+                  </div>
+                  <div class="text-end">
+                    <?php if ((int)($chat['unread_count'] ?? 0) > 0): ?>
+                      <span class="badge bg-danger"><?php echo (int)$chat['unread_count']; ?> new</span>
+                    <?php endif; ?>
+                    <div><a class="small text-primary" href="chat.php?conversation_id=<?php echo (int)$chat['id']; ?>">Open</a></div>
+                  </div>
+                </li>
+              <?php endforeach; ?>
+            </ul>
+          <?php endif; ?>
         </div>
       </div>
     </div>

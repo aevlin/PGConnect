@@ -18,14 +18,13 @@ if (!$b || (int)$b['owner_id'] !== $ownerId) {
     header('Location: owner-bookings.php'); exit;
 }
 
-$c = $pdo->prepare('SELECT id FROM conversations WHERE user_id = ? AND owner_id = ? AND pg_id = ? LIMIT 1');
+$c = $pdo->prepare("SELECT id FROM conversations WHERE user_id = ? AND owner_id = ? AND pg_id = ? AND COALESCE(conversation_type, 'tenant_owner') = 'tenant_owner' LIMIT 1");
 $c->execute([(int)$b['user_id'], $ownerId, (int)$b['pg_id']]);
 $convId = (int)$c->fetchColumn();
 if ($convId <= 0) {
-    $ins = $pdo->prepare('INSERT INTO conversations (user_id, owner_id, pg_id) VALUES (?, ?, ?)');
+    $ins = $pdo->prepare("INSERT INTO conversations (user_id, owner_id, pg_id, conversation_type) VALUES (?, ?, ?, 'tenant_owner')");
     $ins->execute([(int)$b['user_id'], $ownerId, (int)$b['pg_id']]);
     $convId = (int)$pdo->lastInsertId();
 }
 
 header('Location: chat.php?c=' . $convId); exit;
-
