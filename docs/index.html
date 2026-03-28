@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PGConnect Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light fixed-top app-nav">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="./index.html">
+        <span class="badge rounded-circle bg-primary text-white fw-bold">PG</span>
+        <span>PGCONNECT</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNav">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 me-3">
+          <li class="nav-item"><a class="nav-link" href="#listings">PGs</a></li>
+          <li class="nav-item"><a class="nav-link" href="#owners">For owners</a></li>
+        </ul>
+        <div class="d-flex gap-2">
+          <a href="./login.html" class="btn btn-outline-secondary btn-sm px-3">Login</a>
+          <a href="./signup.html" class="btn btn-primary btn-sm px-3">Sign Up</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero-wrap">
+    <div class="hero-bg"></div>
+    <div class="container position-relative">
+      <div class="row g-4 align-items-center">
+        <div class="col-lg-5">
+          <div class="eyebrow">
+            <span></span>
+            Demo showcase on GitHub Pages
+          </div>
+          <h1 class="hero-title mb-3">
+            Find your next <span>PG room</span> with a polished static demo.
+          </h1>
+          <p class="hero-subtitle mb-3">
+            This GitHub Pages version shows the homepage, map, login, and signup experience using sample listings across India.
+          </p>
+          <div class="d-flex flex-wrap gap-4 small text-muted hero-metrics">
+            <span><strong>12 demo PGs</strong> across cities</span>
+            <span><strong>Map view</strong> with live pins</span>
+            <span><strong>3 screens</strong> ready to present</span>
+          </div>
+        </div>
+        <div class="col-lg-7 position-relative">
+          <div class="hero-photo mb-4 mb-lg-0">
+            <img src="https://images.pexels.com/photos/1454806/pexels-photo-1454806.jpeg" alt="Modern PG room">
+          </div>
+          <div class="search-card">
+            <div class="d-flex pill-toggle bg-light rounded-pill p-1 mb-3">
+              <button class="btn btn-sm flex-fill rounded-pill active" type="button">Working Professionals</button>
+              <button class="btn btn-sm flex-fill rounded-pill" type="button">Students</button>
+              <button class="btn btn-sm flex-fill rounded-pill" type="button">Co-living</button>
+            </div>
+            <form id="heroSearchForm">
+              <div class="row g-2 align-items-end">
+                <div class="col-md-4">
+                  <label class="form-label small mb-1">City / Area</label>
+                  <input type="text" id="cityFilter" class="form-control" placeholder="Mumbai, Bangalore, Delhi">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label small mb-1">Room type</label>
+                  <select class="form-select" id="sharingFilter">
+                    <option value="">Any</option>
+                    <option value="Single">Single</option>
+                    <option value="2-sharing">2-sharing</option>
+                    <option value="3-sharing">3-sharing</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label small mb-1">Gender</label>
+                  <select class="form-select" id="genderFilter">
+                    <option value="">Any</option>
+                    <option value="Women">Women</option>
+                    <option value="Men">Men</option>
+                    <option value="Co-ed">Co-ed</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label small mb-1">Budget / month</label>
+                  <select class="form-select" id="budgetFilter">
+                    <option value="">Any</option>
+                    <option value="0-10000">Up to Rs. 10k</option>
+                    <option value="10000-15000">Rs. 10k - 15k</option>
+                    <option value="15000-20000">Rs. 15k - 20k</option>
+                    <option value="20000-999999">Rs. 20k+</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="col-12">
+                  <button class="btn btn-gradient w-100 py-2" type="submit">
+                    <i class="fas fa-search me-2"></i>Explore Demo Listings
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section id="listings" class="section-shell">
+    <div class="container">
+      <div class="row g-4 align-items-start">
+        <div class="col-lg-7">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 mb-0">Featured demo PGs</h2>
+            <span id="resultsCount" class="small text-primary">12 results</span>
+          </div>
+          <div id="listingGrid" class="row g-3"></div>
+        </div>
+        <div class="col-lg-5">
+          <div class="d-flex justify-content-between mb-2">
+            <h2 class="h6 mb-0">India Map View</h2>
+            <span class="small text-muted">Leaflet + OpenStreetMap</span>
+          </div>
+          <div id="pg-map"></div>
+          <div id="nearby-results" class="mt-3"></div>
+          <p class="small text-muted mt-2">
+            This map is interactive on GitHub Pages. Click a marker to preview a demo listing.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="owners" class="section-shell">
+    <div class="container py-5">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-6">
+          <h2 class="h4 mb-3">For owners</h2>
+          <p class="text-muted">Showcase listing flow, map discovery, and polished auth screens without needing the PHP backend.</p>
+          <ul class="list-unstyled owner-list">
+            <li>Easy listing presentation for reviews or demos</li>
+            <li>GitHub Pages friendly static delivery</li>
+            <li>Separate login and signup screens included</li>
+          </ul>
+          <div class="d-flex gap-2 mt-3 flex-wrap">
+            <a href="./signup.html" class="btn btn-gradient">Open signup</a>
+            <a href="./login.html" class="btn btn-outline-primary">Open login</a>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-sm p-4 rounded-4">
+            <div class="row g-3 align-items-center">
+              <div class="col-4 d-flex align-items-center justify-content-center">
+                <div class="owner-earn-icon-wrap" aria-hidden="true">
+                  <i class="fa-solid fa-house"></i>
+                  <i class="fa-solid fa-suitcase-rolling"></i>
+                </div>
+              </div>
+              <div class="col-8">
+                <h5 class="mb-1">Presentation-ready demo</h5>
+                <p class="small text-muted mb-0">Useful when you want to show the product feel on GitHub without deploying PHP, auth, or MySQL.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="py-3">
+    <div class="container d-flex flex-wrap justify-content-between">
+      <span>© 2025 PGConnect Demo.</span>
+      <span class="text-muted">Static showcase for GitHub Pages</span>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
