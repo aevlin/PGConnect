@@ -1,5 +1,6 @@
 <?php
 // logout.php
+require_once __DIR__ . '/backend/bootstrap.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 // Clear all session data
@@ -18,6 +19,5 @@ if (ini_get('session.use_cookies')) {
 }
 
 // Redirect to login page
-if (!defined('BASE_URL')) define('BASE_URL', '/PGConnect');
-header('Location: ' . BASE_URL . '/backend/login.php');
+header('Location: ' . base_url('backend/login.php'));
 exit;

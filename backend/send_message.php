@@ -43,7 +43,7 @@ try {
     }
     $m = $pdo->prepare('INSERT INTO messages (conversation_id, sender_id, sender_role, recipient_role, message, is_read) VALUES (?, ?, ?, ?, ?, 0)');
     $m->execute([$convId, $userId, 'user', 'owner', $message]);
-    notify_user($pdo, $ownerId, 'owner', 'New chat message', 'You received a new message from a user.', '/PGConnect/owner/chat.php?c=' . $convId);
+    notify_user($pdo, $ownerId, 'owner', 'New chat message', 'You received a new message from a user.', base_url('owner/chat.php?c=' . $convId));
     audit_log($pdo, 'chat_message_sent', 'conversation', (int)$convId, 'sender=user');
     echo json_encode(['ok' => true]);
 } catch (Exception $e) {

@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $u->execute(['left', $bookingId]);
             $pdo->commit();
 
-            notify_user($pdo, (int)$b['owner_id'], 'owner', 'Tenant left PG', 'A tenant marked checkout and added a review.', '/PGConnect/owner/owner-bookings.php');
+            notify_user($pdo, (int)$b['owner_id'], 'owner', 'Tenant left PG', 'A tenant marked checkout and added a review.', base_url('owner/owner-bookings.php'));
             audit_log($pdo, 'user_checkout_with_review', 'booking', (int)$bookingId, 'rating=' . $rating);
 
             header('Location: booking-request.php');

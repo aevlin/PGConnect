@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $s = $pdo->prepare('SELECT user_id FROM service_tickets WHERE id = ? LIMIT 1');
         $s->execute([$id]);
         $uid = (int)$s->fetchColumn();
-        if ($uid > 0) notify_user($pdo, $uid, 'user', 'Ticket updated', 'Owner updated your service ticket.', '/PGConnect/user/tickets.php');
+        if ($uid > 0) notify_user($pdo, $uid, 'user', 'Ticket updated', 'Owner updated your service ticket.', base_url('user/tickets.php'));
     }
     header('Location: tickets.php');
     exit;

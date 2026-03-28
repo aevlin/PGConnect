@@ -30,7 +30,7 @@ try {
     $ow = $pdo->prepare('SELECT owner_id FROM conversations WHERE id = ? LIMIT 1');
     $ow->execute([$convId]);
     $ownerId = (int)$ow->fetchColumn();
-    if ($ownerId > 0) notify_user($pdo, $ownerId, 'owner', 'New chat message', 'You received a new message from a user.', '/PGConnect/owner/chat.php?c=' . $convId);
+    if ($ownerId > 0) notify_user($pdo, $ownerId, 'owner', 'New chat message', 'You received a new message from a user.', base_url('owner/chat.php?c=' . $convId));
     audit_log($pdo, 'chat_message_sent', 'conversation', (int)$convId, 'sender=user');
 } catch (Throwable $e) {}
 

@@ -43,7 +43,7 @@ try {
         $c->execute($params);
         $count = (int)$c->fetchColumn();
         if ($count > (int)$ss['last_match_count']) {
-            notify_user($pdo, $userId, 'user', 'New PG match found', "Saved search has {$count} matching PGs.", '/PGConnect/user/search.php');
+            notify_user($pdo, $userId, 'user', 'New PG match found', "Saved search has {$count} matching PGs.", base_url('user/search.php'));
         }
         $u = $pdo->prepare('UPDATE saved_searches SET last_match_count = ? WHERE id = ?');
         $u->execute([$count, (int)$ss['id']]);
@@ -52,4 +52,3 @@ try {
 } catch (Throwable $e) {}
 
 echo json_encode(['ok' => true, 'checked' => $checked]);
-

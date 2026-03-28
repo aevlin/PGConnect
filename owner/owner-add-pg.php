@@ -4,7 +4,6 @@ require_once '../backend/connect.php';
 require_once '../backend/config.php';
 require_once '../backend/upload_helpers.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
-if (!defined('BASE_URL')) define('BASE_URL', '/PGConnect');
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['user_role'] ?? '') !== 'owner') {
   header('Location: ' . BASE_URL . '/backend/login.php');

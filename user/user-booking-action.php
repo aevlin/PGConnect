@@ -62,7 +62,7 @@ try {
     $own->execute([(int)$b['pg_id']]);
     $o = $own->fetch(PDO::FETCH_ASSOC);
     if ($o && !empty($o['owner_id'])) {
-        notify_user($pdo, (int)$o['owner_id'], 'owner', 'Booking action by user', "Booking #{$id} is now {$newStatus}.", '/PGConnect/owner/owner-bookings.php');
+        notify_user($pdo, (int)$o['owner_id'], 'owner', 'Booking action by user', "Booking #{$id} is now {$newStatus}.", base_url('owner/owner-bookings.php'));
     }
 } catch (Throwable $e) {}
 audit_log($pdo, 'user_booking_' . $action, 'booking', (int)$id, "status={$newStatus}");

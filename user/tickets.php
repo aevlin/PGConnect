@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($row) {
             $ins = $pdo->prepare('INSERT INTO service_tickets (booking_id, pg_id, user_id, owner_id, category, title, description, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
             $ins->execute([$bookingId, $row['pg_id'], $userId, $row['owner_id'], $category, $title, $description, 'open']);
-            notify_user($pdo, (int)$row['owner_id'], 'owner', 'New service ticket', $title, '/PGConnect/owner/tickets.php');
+            notify_user($pdo, (int)$row['owner_id'], 'owner', 'New service ticket', $title, base_url('owner/tickets.php'));
             $msg = 'Ticket created.';
         }
     }
@@ -106,4 +106,3 @@ $rows = $tickets->fetchAll(PDO::FETCH_ASSOC);
   </div>
 </div>
 <?php require_once '../includes/footer.php'; ?>
-

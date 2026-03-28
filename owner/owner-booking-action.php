@@ -44,17 +44,17 @@ if ($action === 'approve' || $action === 'reject') {
     if (!empty($b['requester_email'])) {
         @mail($b['requester_email'], 'Booking update', $note, 'From: noreply@pgconnect.local');
     }
-    notify_user($pdo, (int)$b['user_id'], 'user', 'Booking status updated', $note, '/PGConnect/user/booking-request.php');
+    notify_user($pdo, (int)$b['user_id'], 'user', 'Booking status updated', $note, base_url('user/booking-request.php'));
     audit_log($pdo, 'owner_booking_' . $action, 'booking', (int)$id, $note);
 } elseif ($action === 'visit_accept') {
     $upd = $pdo->prepare("UPDATE bookings SET visit_requested = 1, visit_status = 'accepted', visit_note = CONCAT(COALESCE(visit_note,''), ' | Visit accepted'), owner_action_at = NOW() WHERE id = ?");
     $upd->execute([$id]);
-    notify_user($pdo, (int)$b['user_id'], 'user', 'Visit request accepted', 'Owner accepted your visit appointment request.', '/PGConnect/user/booking-request.php');
+    notify_user($pdo, (int)$b['user_id'], 'user', 'Visit request accepted', 'Owner accepted your visit appointment request.', base_url('user/booking-request.php'));
     audit_log($pdo, 'owner_visit_accept', 'booking', (int)$id, 'visit accepted');
 } elseif ($action === 'visit_cancel') {
     $upd = $pdo->prepare("UPDATE bookings SET visit_requested = 0, visit_status = 'cancelled', visit_note = CONCAT(COALESCE(visit_note,''), ' | Visit cancelled by owner'), owner_action_at = NOW() WHERE id = ?");
     $upd->execute([$id]);
-    notify_user($pdo, (int)$b['user_id'], 'user', 'Visit request cancelled', 'Owner cancelled the visit appointment request.', '/PGConnect/user/booking-request.php');
+    notify_user($pdo, (int)$b['user_id'], 'user', 'Visit request cancelled', 'Owner cancelled the visit appointment request.', base_url('user/booking-request.php'));
     audit_log($pdo, 'owner_visit_cancel', 'booking', (int)$id, 'visit cancelled');
 } elseif ($action === 'visit_reschedule') {
     $ts = strtotime($rescheduleAtRaw);
@@ -62,7 +62,7 @@ if ($action === 'approve' || $action === 'reject') {
         $rescheduleAt = date('Y-m-d H:i:s', $ts);
         $upd = $pdo->prepare("UPDATE bookings SET visit_requested = 1, visit_status = 'rescheduled', visit_datetime = ?, visit_note = CONCAT(COALESCE(visit_note,''), ' | Rescheduled by owner'), owner_action_at = NOW() WHERE id = ?");
         $upd->execute([$rescheduleAt, $id]);
-        notify_user($pdo, (int)$b['user_id'], 'user', 'Visit appointment rescheduled', 'Owner suggested a new visit time.', '/PGConnect/user/booking-request.php');
+        notify_user($pdo, (int)$b['user_id'], 'user', 'Visit appointment rescheduled', 'Owner suggested a new visit time.', base_url('user/booking-request.php'));
         audit_log($pdo, 'owner_visit_reschedule', 'booking', (int)$id, 'visit_datetime=' . $rescheduleAt);
     }
 }

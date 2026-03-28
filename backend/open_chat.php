@@ -3,7 +3,6 @@ header('Content-Type: application/json');
 require_once 'connect.php';
 require_once __DIR__ . '/messages_schema.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
-if (!defined('BASE_URL')) define('BASE_URL', '/PGConnect');
 
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
@@ -50,10 +49,9 @@ try {
     echo json_encode([
         'ok' => true,
         'conversation_id' => $conversationId,
-        'redirect' => BASE_URL . '/user/chat.php?c=' . $conversationId
+        'redirect' => base_url('user/chat.php?c=' . $conversationId)
     ]);
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['ok' => false, 'error' => 'server_error']);
 }
-

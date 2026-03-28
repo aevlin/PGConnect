@@ -1,7 +1,6 @@
 <?php
 // backend/auth.php
-
-if (!defined('BASE_URL')) define('BASE_URL', '/PGConnect');
+require_once __DIR__ . '/bootstrap.php';
 
 function ensure_session_started() {
     if (session_status() === PHP_SESSION_NONE) {
@@ -25,4 +24,3 @@ function require_role($role) {
         exit;
     }
 }
-

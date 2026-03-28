@@ -34,10 +34,10 @@ chat_insert_message($pdo, [
 try {
     if ($recipientRole === 'user') {
         $userId = (int)($conv['user_id'] ?? 0);
-        if ($userId > 0) notify_user($pdo, $userId, 'user', 'New chat reply', 'Owner replied in your PG chat.', '/PGConnect/user/chat.php?c=' . $convId);
+        if ($userId > 0) notify_user($pdo, $userId, 'user', 'New chat reply', 'Owner replied in your PG chat.', base_url('user/chat.php?c=' . $convId));
     } else {
         $adminId = (int)($conv['admin_id'] ?? 0);
-        if ($adminId > 0) notify_user($pdo, $adminId, 'admin', 'Owner replied', 'Owner replied in admin chat.', '/PGConnect/admin/chat.php?c=' . $convId);
+        if ($adminId > 0) notify_user($pdo, $adminId, 'admin', 'Owner replied', 'Owner replied in admin chat.', base_url('admin/chat.php?c=' . $convId));
     }
     audit_log($pdo, 'chat_message_sent', 'conversation', (int)$convId, 'sender=owner');
 } catch (Throwable $e) {}

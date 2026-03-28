@@ -27,7 +27,7 @@ if (!is_writable($logFile)) {
 
 function render_friendly_error($title = 'Something went wrong', $msg = '') {
     global $logFile;
-    $home = defined('BASE_URL') ? BASE_URL : '/PGConnect';
+    $home = function_exists('base_url') ? base_url('index.php') : '/';
     http_response_code(500);
     echo '<!doctype html><html><head><meta charset="utf-8"><title>' . htmlspecialchars($title) . '</title>' .
         '<meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="font-family:system-ui, -apple-system, sans-serif;padding:40px;background:#fff;color:#111">';

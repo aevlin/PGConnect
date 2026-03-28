@@ -1,5 +1,5 @@
 <?php
-if (!defined('BASE_URL')) define('BASE_URL', '/PGConnect');
+require_once __DIR__ . '/backend/bootstrap.php';
 if (session_status() === PHP_SESSION_NONE) {
   @session_set_cookie_params(0, '/');
   session_start();

@@ -1,5 +1,6 @@
 <?php 
 $page_title = $page_title ?? 'PGConnect';
+require_once __DIR__ . '/../backend/bootstrap.php';
 // include global error handler to avoid blank white screens on fatal errors
 @include_once __DIR__ . '/error_handler.php';
 // Ensure session cookie is available site-wide
@@ -8,9 +9,6 @@ if (session_status() === PHP_SESSION_NONE) {
   @session_set_cookie_params(0, '/');
   session_start();
 }
-
-// Base URL for site (adjust if you deploy under a different path)
-if (!defined('BASE_URL')) define('BASE_URL', '/PGConnect');
 
 // Normalize image paths stored in DB (e.g., "uploads/...", "/uploads/...", absolute URLs)
 function pg_image_url($path, $fallback = '') {
@@ -59,7 +57,7 @@ function pg_fallback_image($pgId) {
   <title><?php echo htmlspecialchars($page_title); ?> – Find PGs Across India</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#2563eb">
-  <link rel="manifest" href="<?php echo BASE_URL; ?>/manifest.webmanifest">
+  <link rel="manifest" href="<?php echo base_url('manifest.webmanifest'); ?>">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
@@ -109,7 +107,7 @@ function pg_fallback_image($pgId) {
 <body>
 <nav class="navbar navbar-expand-lg navbar-light fixed-top">
   <div class="container">
-  <a class="navbar-brand d-flex align-items-center gap-2" href="<?php echo BASE_URL; ?>/index.php">
+  <a class="navbar-brand d-flex align-items-center gap-2" href="<?php echo base_url('index.php'); ?>">
       <span class="badge rounded-circle bg-primary text-white fw-bold">PG</span>
       <span>PGCONNECT</span>
     </a>

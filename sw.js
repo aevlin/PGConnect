@@ -1,10 +1,12 @@
-const CACHE_NAME = 'pgconnect-v1';
+const CACHE_NAME = 'pgconnect-v2';
+const APP_ROOT = new URL('./', self.location.href);
 const OFFLINE_URLS = [
-  '/PGConnect/index.php',
-  '/PGConnect/backend/login.php',
-  '/PGConnect/backend/signup.php',
-  '/PGConnect/user/pg-listings.php'
-];
+  'index.php',
+  'backend/login.php',
+  'backend/signup.php',
+  'user/pg-listings.php'
+].map((path) => new URL(path, APP_ROOT).pathname);
+const FALLBACK_URL = new URL('index.php', APP_ROOT).pathname;
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -29,7 +31,6 @@ self.addEventListener('fetch', (event) => {
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => {});
         return resp;
       })
-      .catch(() => caches.match(event.request).then((cached) => cached || caches.match('/PGConnect/index.php')))
+      .catch(() => caches.match(event.request).then((cached) => cached || caches.match(FALLBACK_URL)))
   );
 });
-

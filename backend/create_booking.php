@@ -8,7 +8,6 @@ require_once __DIR__ . '/system_schema.php';
 require_once __DIR__ . '/feature_schema.php';
 require_once __DIR__ . '/notify.php';
 require_once __DIR__ . '/audit.php';
-if (!defined('BASE_URL')) define('BASE_URL', '/PGConnect');
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 if (!isset($_SESSION['user_id'])) {
@@ -149,13 +148,13 @@ try {
         $ownerIdStmt->execute([$pgId]);
         $ownerId = (int)$ownerIdStmt->fetchColumn();
         if ($ownerId > 0) {
-            notify_user($pdo, $ownerId, 'owner', 'New booking request', 'A user requested booking for one of your PGs.', BASE_URL . '/owner/owner-bookings.php');
+            notify_user($pdo, $ownerId, 'owner', 'New booking request', 'A user requested booking for one of your PGs.', base_url('owner/owner-bookings.php'));
         }
     }
     // notify admins
     $admins = $pdo->query("SELECT id FROM users WHERE role = 'admin'")->fetchAll(PDO::FETCH_COLUMN);
     foreach ($admins as $aid) {
-        notify_user($pdo, (int)$aid, 'admin', 'New booking request', "Booking #{$bookingId} requires monitoring.", BASE_URL . '/admin/admin-bookings.php');
+        notify_user($pdo, (int)$aid, 'admin', 'New booking request', "Booking #{$bookingId} requires monitoring.", base_url('admin/admin-bookings.php'));
     }
     audit_log($pdo, 'booking_created', 'booking', (int)$bookingId, "pg_id={$pgId}; user_id={$userId}");
 

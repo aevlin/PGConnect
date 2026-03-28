@@ -1,7 +1,7 @@
 <?php
 // Assign all PG listings to a specific owner (admin only)
+require_once __DIR__ . '/bootstrap.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
-if (!defined('BASE_URL')) define('BASE_URL', '/PGConnect');
 if (!isset($_SESSION['user_id']) || ($_SESSION['user_role'] ?? '') !== 'admin') {
   http_response_code(403);
   echo "Admin login required.";

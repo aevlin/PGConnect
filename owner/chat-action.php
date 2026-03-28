@@ -49,7 +49,7 @@ if ($action === 'ask_ready') {
         'message' => 'Are you ready to take this room? You can reply from this chat.',
         'metadata' => ['pg_id' => $pgId],
     ]);
-    notify_user($pdo, $userId, 'user', 'Owner asked about room readiness', 'Reply in chat if you are ready to take the room.', '/PGConnect/user/chat.php?c=' . $convId);
+    notify_user($pdo, $userId, 'user', 'Owner asked about room readiness', 'Reply in chat if you are ready to take the room.', base_url('user/chat.php?c=' . $convId));
     audit_log($pdo, 'chat_readiness_prompt_sent', 'conversation', $convId, 'owner_id=' . $ownerId);
     header('Location: chat.php?c=' . $convId);
     exit;
@@ -117,7 +117,7 @@ if ($action === 'create_booking') {
         'message' => 'I created a booking for you from this chat. Please open your bookings page to confirm and complete payment.',
         'metadata' => ['booking_id' => $bookingId, 'pg_id' => $pgId, 'move_in_date' => $moveInDate],
     ]);
-    notify_user($pdo, $userId, 'user', 'Booking created from chat', 'Owner created a booking for you. Review and complete payment.', '/PGConnect/user/booking-request.php');
+    notify_user($pdo, $userId, 'user', 'Booking created from chat', 'Owner created a booking for you. Review and complete payment.', base_url('user/booking-request.php'));
     audit_log($pdo, 'chat_booking_created', 'booking', $bookingId, 'conversation_id=' . $convId);
     $_SESSION['chat_flash_success'] = 'Booking created from chat.';
     header('Location: chat.php?c=' . $convId);

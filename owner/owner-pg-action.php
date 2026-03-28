@@ -1,6 +1,6 @@
 <?php
+require_once '../backend/bootstrap.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
-if (!defined('BASE_URL')) define('BASE_URL', '/PGConnect');
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['user_role'] ?? '') !== 'owner') {
     header('Location: ' . BASE_URL . '/backend/login.php');

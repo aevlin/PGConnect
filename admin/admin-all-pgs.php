@@ -1,7 +1,7 @@
 <?php
 // admin/admin-all-pgs.php
+require_once '../backend/bootstrap.php';
 session_start();
-if (!defined('BASE_URL')) define('BASE_URL', '/PGConnect');
 if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
   header('Location: ' . BASE_URL . '/backend/login.php');
   exit;

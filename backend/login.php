@@ -1,13 +1,11 @@
 <?php
 // backend/login.php
+require_once __DIR__ . '/bootstrap.php';
 // Start session early so header redirects and session writes work reliably
 if (session_status() === PHP_SESSION_NONE) {
     @session_set_cookie_params(0, '/');
     session_start();
 }
-
-// Define BASE_URL for safe absolute redirects (keeps behavior aligned with includes/header.php)
-if (!defined('BASE_URL')) define('BASE_URL', '/PGConnect');
 
 require_once 'connect.php'; // PDO connection
 require_once 'user_schema.php';

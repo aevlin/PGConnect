@@ -68,11 +68,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $ow->execute([(int)$booking['pg_id']]);
                 $ownerId = (int)$ow->fetchColumn();
                 if ($ownerId > 0) {
-                    notify_user($pdo, $ownerId, 'owner', 'Payment received', "User completed payment for booking #{$bookingId}.", '/PGConnect/owner/owner-bookings.php');
+                    notify_user($pdo, $ownerId, 'owner', 'Payment received', "User completed payment for booking #{$bookingId}.", base_url('owner/owner-bookings.php'));
                 }
                 $admins = $pdo->query("SELECT id FROM users WHERE role = 'admin'")->fetchAll(PDO::FETCH_COLUMN);
                 foreach ($admins as $aid) {
-                    notify_user($pdo, (int)$aid, 'admin', 'Payment completed', "Booking #{$bookingId} has been paid.", '/PGConnect/admin/admin-bookings.php');
+                    notify_user($pdo, (int)$aid, 'admin', 'Payment completed', "Booking #{$bookingId} has been paid.", base_url('admin/admin-bookings.php'));
                 }
             } catch (Throwable $e) {}
             audit_log($pdo, 'payment_success', 'booking', (int)$bookingId, 'ref=' . $paymentRef);

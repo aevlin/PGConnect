@@ -42,7 +42,7 @@ if ($action === 'ready_yes' || $action === 'ready_no') {
         'message' => $isReady ? 'Yes, I am ready to take the room.' : 'Not yet. I need more time before booking.',
         'metadata' => ['pg_id' => $pgId],
     ]);
-    notify_user($pdo, $ownerId, 'owner', 'Chat readiness reply', $isReady ? 'User is ready to take the room.' : 'User is not ready yet.', '/PGConnect/owner/chat.php?c=' . $convId);
+    notify_user($pdo, $ownerId, 'owner', 'Chat readiness reply', $isReady ? 'User is ready to take the room.' : 'User is not ready yet.', base_url('owner/chat.php?c=' . $convId));
     audit_log($pdo, 'chat_readiness_reply', 'conversation', $convId, 'ready=' . ($isReady ? 'yes' : 'no'));
 }
 
