@@ -1,6 +1,10 @@
 <?php
 // backend/connect.php
 require_once __DIR__ . '/bootstrap.php';
+require_once __DIR__ . '/env.php';
+
+pgconnect_load_env_file(dirname(__DIR__) . '/.env');
+pgconnect_load_env_file(__DIR__ . '/.env');
 
 $host    = getenv('PGCONNECT_DB_HOST') ?: getenv('DB_HOST') ?: 'localhost';
 $port    = getenv('PGCONNECT_DB_PORT') ?: getenv('DB_PORT') ?: '';

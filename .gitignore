@@ -1,0 +1,5 @@
+.DS_Store
+.env
+backend/.env
+backend/*.log
+backend/getPgs_error_counts.json
